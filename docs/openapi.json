@@ -2710,6 +2710,38 @@
         "type": "object",
         "properties": {}
       },
+      "AuthorshipResponse": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "AUTENTICADA",
+              "DECLARADA"
+            ]
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sessaoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "perfil": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tipo",
+          "usuarioId",
+          "sessaoId",
+          "perfil"
+        ]
+      },
       "DecisionResponse": {
         "type": "object",
         "properties": {
@@ -2792,6 +2824,15 @@
               "CAPTURA"
             ]
           },
+          "autoria": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthorshipResponse"
+              }
+            ]
+          },
           "decisao": {
             "$ref": "#/components/schemas/DecisionResponse"
           }
@@ -2803,6 +2844,7 @@
           "recebidoEm",
           "provisionamentoId",
           "origem",
+          "autoria",
           "decisao"
         ]
       },
@@ -3017,28 +3059,7 @@
             "maximum": 180
           },
           "autoria": {
-            "type": "object",
-            "properties": {
-              "tipo": {
-                "type": "string",
-                "enum": [
-                  "AUTENTICADA",
-                  "DECLARADA"
-                ]
-              },
-              "usuarioId": {
-                "type": "string",
-                "nullable": true
-              },
-              "sessaoId": {
-                "type": "string",
-                "nullable": true
-              },
-              "perfil": {
-                "type": "string",
-                "nullable": true
-              }
-            }
+            "$ref": "#/components/schemas/AuthorshipResponse"
           },
           "armazenada": {
             "type": "boolean",

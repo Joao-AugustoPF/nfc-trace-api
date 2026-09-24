@@ -35,17 +35,14 @@ export class DecisionResponse {
   @ApiProperty({ type: String, nullable: true }) estadoResultante!: string | null;
   @ApiProperty({ type: [String] }) avisos!: string[];
 }
+export class AuthorshipResponse {
+  @ApiProperty({ enum: ['AUTENTICADA', 'DECLARADA'] }) tipo!: string;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true }) usuarioId!: string | null;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true }) sessaoId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) perfil!: string | null;
+}
 export class ObservationResponse extends ObservationDto {
-  @ApiProperty({
-    type: 'object',
-    properties: {
-      tipo: { type: 'string', enum: ['AUTENTICADA', 'DECLARADA'] },
-      usuarioId: { type: 'string', nullable: true },
-      sessaoId: { type: 'string', nullable: true },
-      perfil: { type: 'string', nullable: true },
-    },
-  })
-  autoria!: Record<string, string | null>;
+  @ApiProperty({ type: AuthorshipResponse }) autoria!: AuthorshipResponse;
   @ApiProperty({ example: true }) armazenada!: boolean;
   @ApiProperty({ type: String, format: 'uuid', nullable: true }) pedidoId!: string | null;
   @ApiProperty({ type: String, nullable: true }) estrategia!: string | null;
@@ -59,5 +56,6 @@ export class HistoryResponse {
   @ApiProperty({ format: 'date-time' }) recebidoEm!: string;
   @ApiProperty({ format: 'uuid' }) provisionamentoId!: string;
   @ApiProperty({ enum: ['SISTEMA', 'CAPTURA'] }) origem!: string;
+  @ApiProperty({ type: AuthorshipResponse, nullable: true }) autoria!: AuthorshipResponse | null;
   @ApiProperty({ type: DecisionResponse }) decisao!: DecisionResponse;
 }
