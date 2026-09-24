@@ -80,6 +80,28 @@ O procedimento de criação explícita de contas, revogação e sessão mobile e
 O desligamento gracioso interrompe novos ciclos, aguarda o ciclo em andamento e fecha o banco.
 Falhas abruptas são cobertas pela persistência e expiração de lease.
 
+## Verificações locais e GitHub Actions
+
+Para economizar minutos do GitHub Actions, o workflow possui somente o gatilho manual
+`workflow_dispatch`. Pushes, PRs e merges não iniciam jobs automaticamente. O workflow
+também foi desabilitado no GitHub durante a transição: somente reabilitar após integrar
+esta configuração na branch principal, para não restaurar os gatilhos antigos da main.
+Execuções manuais ficam reservadas a uma necessidade explícita de validação remota.
+
+Antes de publicar alterações, executar localmente, com PostgreSQL de testes disponível:
+
+```sh
+npm run lint
+npm run typecheck
+npm run format:check
+npm run test:all
+npm run build
+npm run openapi
+git diff --exit-code -- docs/openapi.json
+```
+
+O último comando pressupõe que o contrato gerado já foi incluído no commit.
+
 ## Validação física futura
 
 Os testes automáticos usam leituras sintéticas. A aceitação com hardware exige conferir
