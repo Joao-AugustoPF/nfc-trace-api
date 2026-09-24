@@ -1,0 +1,45 @@
+name: nfc-trace
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: nfc_trace
+      POSTGRES_PASSWORD: nfc_trace_local
+      POSTGRES_DB: nfc_trace
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./infra/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nfc_trace -d nfc_trace']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://nfc_trace:nfc_trace_local@postgres:5432/nfc_trace
+    command: ['node', 'dist/platform/database/cli.js', 'migrate']
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://nfc_trace:nfc_trace_local@postgres:5432/nfc_trace
+      APP_PROCESS_ROLE: all
+      HOST: 0.0.0.0
+      PORT: 3000
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+volumes:
+  postgres_data:
