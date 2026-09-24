@@ -1,7 +1,8 @@
 # Contrato para integração do Nova-tag
 
-O contrato executável está em `openapi.json` e em `/docs`. O app atual tem serviços simulados
-e captura somente UID. Esta entrega não altera o código do Nova-tag.
+O contrato executável está em `openapi.json` e em `/docs`. As rotas de negócio exigem Bearer
+obtido em `POST /autenticacao/login`; ver [autenticação](authentication.md). O Nova-tag recebe
+login/sessão na issue #3, mas os serviços operacionais ainda são simulados e leem somente UID.
 
 ## Ordem de integração
 
@@ -122,6 +123,9 @@ Uma nova leitura/ação terá outro UUID; repetição de transporte mantém o UU
 
 | Situação | Resultado |
 | --- | --- |
+| Sessão ausente, expirada ou revogada | 401 `SESSAO_INVALIDA` |
+| Perfil sem permissão | 403 `ACESSO_NEGADO` |
+| Reenvio de captura autenticada por outro operador | 409 `IDEMPOTENCIA_OPERADOR_DIVERGENTE` |
 | Mesmo UUID e conteúdo equivalente | HTTP 200 com decisão original |
 | Mesmo UUID com conteúdo diferente | 409 `IDEMPOTENCIA_CONFLITO` |
 | Pedido ou etiqueta já vinculados | 409 `PEDIDO_COM_ETIQUETA` / `ETIQUETA_VINCULADA` |
@@ -142,3 +146,7 @@ Os horários de ocorrência e recebimento são apresentados separadamente. O his
 
 Capturas com provisionamento inexistente ficam disponíveis pelo UUID, mas não são
 atribuídas a um pedido. O backend não confia em uma associação declarada sem cadastro.
+
+`autoria` separa usuário/sessão/perfil verificados de `operadorId` e `dispositivoId`, que
+continuam declarações. Capturas da v1 sem sessão são `DECLARADA`, sem autoria retroativa.
+No retry do mesmo operador, a resposta preserva a sessão originalmente gravada.

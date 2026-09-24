@@ -3,10 +3,15 @@ import { deepStrictEqual } from 'node:assert';
 
 // Simulated readings exercise HTTP only; they do not validate NFC hardware.
 const base = process.env.API_URL ?? 'http://127.0.0.1:3000/api/v1';
+let token;
 async function call(path, body) {
   const response = await fetch(`${base}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-correlation-id': 'demo' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-correlation-id': 'demo',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const result = await response.json();
@@ -14,6 +19,15 @@ async function call(path, body) {
   return result.dados;
 }
 
+if (!process.env.DEMO_LOGIN || !process.env.DEMO_PASSWORD) {
+  throw new Error('Defina DEMO_LOGIN e DEMO_PASSWORD de um administrador no ambiente local.');
+}
+token = (
+  await call('/autenticacao/login', {
+    login: process.env.DEMO_LOGIN,
+    senha: process.env.DEMO_PASSWORD,
+  })
+).tokenAcesso;
 const pedido = await call('/pedidos', {
   codigo: `DEMO-${randomUUID()}`,
   descricao: 'Leituras simuladas; sem etiqueta física.',
@@ -53,3 +67,5 @@ console.log(
     2,
   ),
 );
+
+await call('/autenticacao/logout', {});

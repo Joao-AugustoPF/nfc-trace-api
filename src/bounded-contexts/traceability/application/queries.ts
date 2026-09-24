@@ -42,6 +42,7 @@ export class TraceabilityQueries {
       recebidoEm: item.receivedAt,
       provisionamentoId: item.provisioningId,
       origem: item.observation ? 'CAPTURA' : 'SISTEMA',
+      autoria: item.observation ? observationView(item.observation).autoria : null,
       decisao: item.observation
         ? observationView(item.observation).decisao
         : {

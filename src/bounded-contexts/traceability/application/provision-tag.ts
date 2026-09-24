@@ -1,4 +1,5 @@
 import { DomainError } from '../../../shared-kernel/domain-error';
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
 import { Provisioning } from '../domain/provisioning';
 import { Strategy } from '../domain/types';
 import { normalizeUid } from '../domain/values';
@@ -16,6 +17,7 @@ export class ProvisionTag {
   async execute(
     input: { pedidoId: string; uid: string; modelo: string; estrategia: string },
     correlationId: string,
+    actor: AuthenticatedActor | null = null,
   ) {
     if (!['UID', 'NDEF_ESTATICO'].includes(input.estrategia)) {
       throw new DomainError(
@@ -68,7 +70,7 @@ export class ProvisionTag {
       });
       await tx.provisionings.save(provisioning);
       await tx.outbox.append(
-        envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null),
+        envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null, actor),
       );
       return provisioningView({ provisioning: provisioning.snapshot(), tag });
     });

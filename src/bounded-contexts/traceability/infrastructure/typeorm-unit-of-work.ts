@@ -97,6 +97,7 @@ export function createTransaction(manager: EntityManager): Transaction {
       },
       async insert(o) {
         await manager.insert(ObservationRow, {
+          authenticatedActor: o.authenticatedActor ?? null,
           id: o.input.id,
           orderId: o.orderId,
           provisioningId: o.input.provisionamentoId,

@@ -21,6 +21,7 @@ export const toProvisioningSnapshot = (row: ProvisioningRecord): ProvisioningSna
 export const toProvisioning = (row: ProvisioningRecord): Provisioning =>
   Provisioning.restore(toProvisioningSnapshot(row));
 export const toObservation = (row: ObservationRow, decision: DecisionRow): ObservationRecord => ({
+  authenticatedActor: row.authenticatedActor,
   input: row.input,
   fingerprint: row.fingerprint,
   orderId: row.orderId,

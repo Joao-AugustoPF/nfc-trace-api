@@ -117,7 +117,8 @@ operações externas irreversíveis assumindo que o rollback do banco as desfaz.
 
 ## Evolução prevista
 
-Autenticação deverá substituir metadados declarados por identidade verificada na fronteira
-HTTP. A v2 adicionará fila mobile, lote com resultado por item e dependências/reconciliação.
+Autenticação foi entregue no contexto `identity`, com sessões revogáveis, permissões na
+fronteira HTTP e autoria verificada registrada separadamente das declarações (ver
+[ADR 006](authentication.md)). A v2 adicionará fila mobile, lote com resultado por item e dependências/reconciliação.
 A v3 adicionará o perfil SDM definido com o hardware, chaves e controle de evidência por
 etiqueta/época/contador. Essas etapas exigem novas decisões e testes; não estão simuladas na v1.
