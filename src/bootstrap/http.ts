@@ -15,6 +15,7 @@ import { INestApplication } from '@nestjs/common';
 import { Request, Response, NextFunction, json } from 'express';
 import { Observable, map } from 'rxjs';
 import { DomainError } from '../shared-kernel/domain-error';
+import { AccessError } from '../shared-kernel/actor';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
@@ -25,7 +26,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     let status = 500;
     let code = 'ERRO_INTERNO';
     let message = 'Falha interna ao processar a solicitação.';
-    if (error instanceof DomainError) {
+    if (error instanceof AccessError) {
+      status = { unauthenticated: 401, forbidden: 403, 'rate-limited': 429 }[error.kind];
+      code = error.code;
+      message = error.message;
+      if (status === 401) response.setHeader('WWW-Authenticate', 'Bearer');
+      if (status === 429) response.setHeader('Retry-After', '900');
+    } else if (error instanceof DomainError) {
       status = { validation: 400, 'not-found': 404, conflict: 409, unsupported: 422 }[error.kind];
       code = error.code;
       message = error.message;
@@ -86,6 +93,7 @@ export function configureHttp(app: INestApplication): void {
         : randomUUID();
     request.headers['x-correlation-id'] = id;
     response.setHeader('x-correlation-id', id);
+    response.setHeader('Cache-Control', 'no-store');
     const start = performance.now();
     response.on('finish', () =>
       logger.log({

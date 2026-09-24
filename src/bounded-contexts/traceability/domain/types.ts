@@ -1,3 +1,4 @@
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
 export const STRATEGIES = ['UID', 'NDEF_ESTATICO'] as const;
 export type Strategy = (typeof STRATEGIES)[number];
 export const EVENT_TYPES = [
@@ -46,6 +47,7 @@ export interface Decision {
 }
 
 export interface ObservationRecord {
+  authenticatedActor?: AuthenticatedActor | null;
   input: ObservationInput;
   fingerprint: string;
   orderId: string | null;

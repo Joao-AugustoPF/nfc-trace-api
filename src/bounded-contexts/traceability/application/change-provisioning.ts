@@ -1,4 +1,5 @@
 import { DomainError } from '../../../shared-kernel/domain-error';
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
 import { Clock, IdGenerator, Transaction, UnitOfWork } from './ports';
 import { envelopes } from './event-factory';
 import { provisioningView } from './views';
@@ -28,6 +29,7 @@ export class ActivateProvisioning {
     id: string,
     input: { bloqueioConfirmado: boolean; referenciaNdef?: string },
     correlationId: string,
+    actor: AuthenticatedActor | null = null,
   ) {
     return this.uow.run(async (tx) => {
       const { provisioning, order, tag } = await lockProvisioning(tx, id);
@@ -46,7 +48,7 @@ export class ActivateProvisioning {
           receivedAt: now,
         });
         await tx.outbox.append(
-          envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null),
+          envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null, actor),
         );
       }
       return provisioningView({ provisioning: provisioning.snapshot(), tag });
@@ -61,14 +63,14 @@ export class CloseProvisioning {
     private readonly ids: IdGenerator,
   ) {}
 
-  async execute(id: string, correlationId: string) {
+  async execute(id: string, correlationId: string, actor: AuthenticatedActor | null = null) {
     return this.uow.run(async (tx) => {
       const { provisioning, tag } = await lockProvisioning(tx, id);
       const now = this.clock.now();
       if (provisioning.close(now)) {
         await tx.provisionings.save(provisioning);
         await tx.outbox.append(
-          envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null),
+          envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null, actor),
         );
       }
       return provisioningView({ provisioning: provisioning.snapshot(), tag });

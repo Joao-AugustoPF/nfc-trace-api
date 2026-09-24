@@ -34,6 +34,12 @@ export const observationView = (o: ObservationRecord) => ({
   pedidoId: o.orderId,
   estrategia: o.strategy,
   recebidoEm: o.receivedAt,
+  autoria: {
+    tipo: o.authenticatedActor ? 'AUTENTICADA' : 'DECLARADA',
+    usuarioId: o.authenticatedActor?.userId ?? null,
+    sessaoId: o.authenticatedActor?.sessionId ?? null,
+    perfil: o.authenticatedActor?.role ?? null,
+  },
   decisao: {
     autorizada: o.decision.accepted,
     motivo: o.decision.reason,

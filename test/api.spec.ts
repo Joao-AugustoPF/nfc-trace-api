@@ -4,7 +4,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { createHttpApplication } from '../src/bootstrap/application';
 import { readConfig } from '../src/bootstrap/config';
-import { testDatabase, resetDatabase } from './support';
+import { testDatabase, resetDatabase, seedIdentity } from './support';
 
 const uid = '04AABBCCDDEE01';
 type Provisioned = { orderId: string; id: string; referenciaNdef: string | null };
@@ -12,7 +12,11 @@ type Provisioned = { orderId: string; id: string; referenciaNdef: string | null 
 describe('HTTP API with PostgreSQL', () => {
   let source: DataSource;
   let app: INestApplication;
-  const http = () => request(app.getHttpServer());
+  let token: string;
+  const http = () => ({
+    get: (path: string) => request(app.getHttpServer()).get(path).auth(token, { type: 'bearer' }),
+    post: (path: string) => request(app.getHttpServer()).post(path).auth(token, { type: 'bearer' }),
+  });
 
   beforeAll(async () => {
     source = await testDatabase();
@@ -28,6 +32,7 @@ describe('HTTP API with PostgreSQL', () => {
   });
   beforeEach(async () => {
     await resetDatabase(source);
+    token = (await seedIdentity(source)).token;
   });
 
   async function order(code = `LAB-${randomUUID()}`): Promise<string> {

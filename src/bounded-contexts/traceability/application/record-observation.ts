@@ -1,4 +1,5 @@
 import { DomainError } from '../../../shared-kernel/domain-error';
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
 import { DomainEvent } from '../../../shared-kernel/events';
 import { Order } from '../domain/order';
 import { Decision, ObservationInput, ObservationRecord } from '../domain/types';
@@ -43,13 +44,24 @@ export class RecordObservation {
     private readonly fingerprints: Fingerprint,
   ) {}
 
-  async execute(raw: ObservationInput, correlationId: string) {
+  async execute(
+    raw: ObservationInput,
+    correlationId: string,
+    actor: AuthenticatedActor | null = null,
+  ) {
     const input = normalizeObservation(raw);
     const fingerprint = this.fingerprints.of(input);
     return this.uow.run(async (tx) => {
       await tx.observations.lock(input.id);
       const existing = await tx.observations.get(input.id);
       if (existing) {
+        if (existing.authenticatedActor && existing.authenticatedActor.userId !== actor?.userId) {
+          throw new DomainError(
+            'IDEMPOTENCIA_OPERADOR_DIVERGENTE',
+            'Esta captura pertence a outro operador autenticado.',
+            'conflict',
+          );
+        }
         if (existing.fingerprint !== fingerprint) {
           throw new DomainError(
             'IDEMPOTENCIA_CONFLITO',
@@ -100,6 +112,7 @@ export class RecordObservation {
         }
       }
       const observation: ObservationRecord = {
+        authenticatedActor: actor,
         input,
         fingerprint,
         orderId: order?.snapshot().id ?? null,
@@ -134,7 +147,7 @@ export class RecordObservation {
           },
         },
       ];
-      await tx.outbox.append(envelopes(events, this.ids, now, correlationId, input.id));
+      await tx.outbox.append(envelopes(events, this.ids, now, correlationId, input.id, actor));
       return observationView(observation);
     });
   }

@@ -6,9 +6,14 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle('NFC Trace API')
-      .setVersion('1.0.0')
+      .setVersion('1.1.0')
+      .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        description: 'Token opaco retornado por POST /api/v1/autenticacao/login.',
+      })
       .setDescription(
-        'API experimental sem login. Operador e dispositivo são declarados. HTTP 200 em eventos confirma armazenamento; a decisão informa se a movimentação foi autorizada. UID/NDEF não são autenticação criptográfica.',
+        'API experimental com sessões revogáveis. Identidade autenticada é registrada separadamente do operador/dispositivo declarados. HTTP 200 em eventos confirma armazenamento; a decisão informa se a movimentação foi autorizada. UID/NDEF não são autenticação criptográfica.',
       )
       .build(),
   );
