@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsBase64,
   IsBoolean,
@@ -162,6 +163,20 @@ export class ObservationDto implements ObservationInput {
   @Min(-180)
   @Max(180)
   longitude?: number;
+}
+
+export class ObservationBatchDto {
+  @ApiProperty({
+    type: [ObservationDto],
+    minItems: 1,
+    maxItems: 50,
+    description:
+      'Cada entrada é validada/processada separadamente, na ordem recebida. Corpo total limitado a 32 KiB.',
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(50)
+  itens!: unknown[];
 }
 
 export class PaginationDto {

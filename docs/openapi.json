@@ -1581,6 +1581,160 @@
         ]
       }
     },
+    "/api/v1/eventos/lote": {
+      "post": {
+        "description": "Cada item tem transação/idempotência próprias. HTTP 200 confirma processamento do lote, não armazenamento ou autorização de todos os itens. Erros de entrada não impedem os demais. A ordem é preservada; reordenação logística pertence à reconciliação futura.",
+        "operationId": "ObservationsController_batch",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObservationBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/ObservationBatchResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sincronizar até 50 capturas com resultado por item",
+        "tags": [
+          "Eventos"
+        ]
+      }
+    },
     "/api/v1/eventos/{id}": {
       "get": {
         "operationId": "ObservationsController_get",
@@ -3218,6 +3372,80 @@
           "ocorridoEm",
           "dispositivoId",
           "leituraBruta"
+        ]
+      },
+      "ObservationBatchItemResponse": {
+        "type": "object",
+        "properties": {
+          "indice": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "sucesso": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "number"
+          },
+          "codigo": {
+            "type": "string",
+            "nullable": true
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "dados": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObservationResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "indice",
+          "id",
+          "sucesso",
+          "status",
+          "codigo",
+          "mensagem",
+          "dados"
+        ]
+      },
+      "ObservationBatchResponse": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObservationBatchItemResponse"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "ObservationBatchDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Cada entrada é validada/processada separadamente, na ordem recebida. Corpo total limitado a 32 KiB.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObservationDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
         ]
       },
       "UserResponse": {

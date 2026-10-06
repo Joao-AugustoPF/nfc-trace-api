@@ -67,3 +67,16 @@ export class HistoryResponse {
   @ApiProperty({ type: AuthorshipResponse, nullable: true }) autoria!: AuthorshipResponse | null;
   @ApiProperty({ type: DecisionResponse }) decisao!: DecisionResponse;
 }
+
+export class ObservationBatchItemResponse {
+  @ApiProperty() indice!: number;
+  @ApiProperty({ type: String, nullable: true }) id!: string | null;
+  @ApiProperty() sucesso!: boolean;
+  @ApiProperty() status!: number;
+  @ApiProperty({ type: String, nullable: true }) codigo!: string | null;
+  @ApiProperty() mensagem!: string;
+  @ApiProperty({ type: ObservationResponse, nullable: true }) dados!: ObservationResponse | null;
+}
+export class ObservationBatchResponse {
+  @ApiProperty({ type: [ObservationBatchItemResponse] }) itens!: ObservationBatchItemResponse[];
+}
