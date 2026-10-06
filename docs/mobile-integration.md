@@ -2,14 +2,16 @@
 
 O contrato executável está em `openapi.json` e em `/docs`. As rotas de negócio exigem Bearer
 obtido em `POST /autenticacao/login`; ver [autenticação](authentication.md). A branch
-Expo `codex/issue-1-sdm-bench-profile` do Nova-tag já integra login/sessão,
+Expo `codex/issue-4-durable-offline` do Nova-tag já integra login/sessão,
 cadastro de pedidos, UID/NDEF estático, provisionamento em duas etapas, encerramento,
-reutilização, eventos e histórico com HTTP real. A main do mobile
+reutilização, eventos, histórico e fila SQLite com HTTP real. A main do mobile
 ainda representa a versão anterior; consultar a branch ao validar a integração.
 As issues #1/#2/#3 registram o software entregue e aprovado; personalização/proteção
 e aceite físico completo foram concentrados na
 [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12). A integração dos
 PRs na main permanece separada. Veja [situação atual](project-status.md).
+O [contrato de lote e as decisões offline](offline-synchronization.md) descrevem
+`POST /eventos/lote`, limites, resultado por item, cache e reautenticação.
 
 ## Ordem de integração
 

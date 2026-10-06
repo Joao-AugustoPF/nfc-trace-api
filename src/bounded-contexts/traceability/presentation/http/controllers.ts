@@ -4,12 +4,16 @@ import {
   Get,
   Headers,
   HttpCode,
+  Logger,
   Param,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { DomainError } from '../../../../shared-kernel/domain-error';
 import { AuthenticatedActor, ROLES } from '../../../../shared-kernel/actor';
 import { AllowRoles, Principal } from '../../../../platform/access/http-security';
 import { CreateOrder } from '../../application/create-order';
@@ -21,6 +25,7 @@ import {
   ActivationDto,
   CreateOrderDto,
   ObservationDto,
+  ObservationBatchDto,
   OrderSearchDto,
   PaginationDto,
   ProvisionTagDto,
@@ -29,6 +34,8 @@ import {
   ApiSuccess,
   HistoryResponse,
   ObservationResponse,
+  ObservationBatchResponse,
+  ObservationBatchItemResponse,
   OrderResponse,
   OrderDetailsResponse,
   ProvisioningResponse,
@@ -143,6 +150,7 @@ export class ProvisioningsController {
 @AllowRoles(...ROLES)
 @Controller('eventos')
 export class ObservationsController {
+  private readonly logger = new Logger(ObservationsController.name);
   constructor(
     private readonly record: RecordObservation,
     private readonly queries: TraceabilityQueries,
@@ -162,6 +170,85 @@ export class ObservationsController {
     @Principal() actor: AuthenticatedActor,
   ) {
     return this.record.execute(body, correlationId, actor);
+  }
+  @Post('lote')
+  @AllowRoles('ADMINISTRADOR', 'OPERADOR')
+  @HttpCode(200)
+  @ApiSuccess(ObservationBatchResponse)
+  @ApiOperation({
+    summary: 'Sincronizar até 50 capturas com resultado por item',
+    description:
+      'Cada item tem transação/idempotência próprias. HTTP 200 confirma processamento do lote, não armazenamento ou autorização de todos os itens. Erros de entrada não impedem os demais. A ordem é preservada; reordenação logística pertence à reconciliação futura.',
+  })
+  async batch(
+    @Body() body: ObservationBatchDto,
+    @Headers('x-correlation-id') correlationId: string,
+    @Principal() actor: AuthenticatedActor,
+  ): Promise<ObservationBatchResponse> {
+    const itens: ObservationBatchItemResponse[] = [];
+    for (const [indice, raw] of body.itens.entries()) {
+      const id =
+        raw &&
+        typeof raw === 'object' &&
+        'id' in raw &&
+        typeof raw.id === 'string' &&
+        /^[0-9a-f-]{36}$/i.test(raw.id)
+          ? raw.id.toLowerCase()
+          : null;
+      const errorItem = (status: number, codigo: string, mensagem: string) => ({
+        indice,
+        id,
+        sucesso: false,
+        status,
+        codigo,
+        mensagem,
+        dados: null,
+      });
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+        itens.push(errorItem(400, 'ENTRADA_INVALIDA', 'Confira os campos e formatos enviados.'));
+        continue;
+      }
+      try {
+        const input = plainToInstance(ObservationDto, raw);
+        const errors = await validate(input, {
+          whitelist: true,
+          forbidNonWhitelisted: true,
+          forbidUnknownValues: true,
+          validationError: { target: false, value: false },
+        });
+        if (errors.length) {
+          itens.push(errorItem(400, 'ENTRADA_INVALIDA', 'Confira os campos e formatos enviados.'));
+          continue;
+        }
+        const dados = await this.record.execute(input, correlationId, actor);
+        itens.push({
+          indice,
+          id: input.id,
+          sucesso: true,
+          status: 200,
+          codigo: null,
+          mensagem: 'Captura armazenada. Consulte a decisão logística.',
+          dados,
+        });
+      } catch (error) {
+        if (error instanceof DomainError) {
+          const status = { validation: 400, 'not-found': 404, conflict: 409, unsupported: 422 }[
+            error.kind
+          ];
+          itens.push(errorItem(status, error.code, error.message));
+        } else {
+          this.logger.error({
+            event: 'batch_item_failed',
+            correlationId,
+            indice,
+            observationId: id,
+            errorType: error instanceof Error ? error.name : 'UnknownError',
+          });
+          itens.push(errorItem(500, 'ERRO_INTERNO', 'Falha temporária ao processar esta captura.'));
+        }
+      }
+    }
+    return { itens };
   }
   @Get(':id')
   @ApiSuccess(ObservationResponse)

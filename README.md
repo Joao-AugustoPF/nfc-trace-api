@@ -5,8 +5,9 @@ provisionamento por UID ou NDEF estático, decisões sobre capturas e histórico
 É um monólito NestJS com domínio independente do framework e eventos persistidos em PostgreSQL.
 
 Esta versão exige **sessão autenticada e permissão por perfil**. A autoria verificada é
-separada do operador, aparelho e bloqueio físico declarados pelo cliente. SDM, fila offline
-e integração das operações NFC do aplicativo permanecem nas próximas entregas.
+separada do operador, aparelho e bloqueio físico declarados pelo cliente. O Nova-tag
+integra UID/NDEF e fila offline SQLite; a API recebe lotes com resultado por item.
+SDM, reconciliação e aceite físico completo permanecem nas próximas entregas.
 
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
@@ -96,6 +97,7 @@ A auditoria é alimentada depois pelo dispatcher. Reenvios recuperam a decisão 
 - [Arquitetura e decisões](docs/architecture.md)
 - [Autenticação, permissões e bootstrap](docs/authentication.md)
 - [Contrato e integração do Nova-tag](docs/mobile-integration.md)
+- [Sincronização offline e contrato de lote](docs/offline-synchronization.md)
 - [Operação e recuperação da outbox](docs/operations.md)
 - [Contrato OpenAPI versionado](docs/openapi.json)
 - [Entregas concluídas e trabalho restante](docs/project-status.md)
@@ -111,9 +113,9 @@ A API recebe a referência NDEF já decodificada pelo aplicativo. Os bytes origi
 ser enviados separadamente em Base64. UID e NDEF estático identificam cadastros, mas não
 autenticam criptograficamente a etiqueta, o operador ou a movimentação física.
 
-O Nova-tag Expo (`codex/issue-1-sdm-bench-profile`) integra login/SecureStore,
+O Nova-tag Expo (`codex/issue-4-durable-offline`) integra login/SecureStore,
 cadastro/busca de pedidos, UID/NDEF, provisionamento em duas etapas, encerramento,
-reutilização, eventos e histórico com a API real. Essas alterações
+reutilização, eventos, histórico e fila durável com a API real. Essas alterações
 ainda estão em branch separada da main do mobile. As entregas de software #1/#2/#3
 foram aprovadas; personalização/proteção e aceite físico estão concentrados na #12.
 Testes de sessão não validam hardware NFC.
