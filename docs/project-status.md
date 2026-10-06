@@ -21,31 +21,50 @@ A integração dos PRs e o aceite da versão exata de entrega permanecem em #9. 
 regra de publicação substitui a exigência antiga de aguardar merge para encerrar
 as issues de software, conforme autorização do mantenedor nesta atualização.
 
-## Somente trabalho restante
+## Desenvolvimento e aceite físico
 
-| Issue | Falta entregar | Pré-requisito pendente |
+A NTAG 424 DNA não bloqueia a implementação de software. #4 e #5 podem ser
+assumidas em paralelo agora. #6 e #7 podem avançar depois dos contratos de que
+dependem, ainda sem a etiqueta. Em #8 e #9 já é possível preparar protocolo,
+análise, instalação e documentação; a coleta física e o aceite final aguardam
+o equipamento e as entregas anteriores.
+
+Os campos `Blocked by` abaixo indicam dependências para concluir o escopo
+integrado, não proibição de preparar partes independentes. Testes com vetores
+oficiais/fixtures identificadas comprovam software; não comprovam NFC físico.
+
+| Issue | Falta entregar | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Personalização autenticada/secure messaging, proteção reversível por chave, recuperação, perfil físico definitivo e aceite NTAG 424 DNA/UID/NDEF/SDM | Hardware real e implementação administrativa restante |
-| [#5](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/5) | Verificador SDM na API, referências/versões de chave por época, consumo/contadores concorrentes e políticas estrita/tardia | #12 |
-| [#4](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/4) | Fila local transacional, recuperação após reinício, cache seguro de vínculos, sincronização e lote | #5; fluxo online #2 já entregue |
-| [#6](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/6) | Reavaliação de eventos fora de ordem, decisões versionadas e histórico de pendências | #4 |
+| [#4](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/4) | Fila local transacional, recuperação após reinício, cache seguro de vínculos, sincronização e lote; preservar evidência sem interpretá-la | Nenhuma issue pendente; fluxo online #2 já entregue |
+| [#5](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/5) | Verificador SDM na API, referências/versões de chave por época, consumo/contadores concorrentes e políticas estrita/tardia; testes com vetores oficiais | Nenhuma issue pendente; perfil candidato versionado disponível |
+| [#6](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/6) | Reavaliação de eventos fora de ordem, decisões versionadas e histórico de pendências | #4 e #5; não depende do aceite físico #12 |
 | [#7](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/7) | Instrumentação, CSV/JSON, validação de integridade e cenários reproduzíveis | #6 |
-| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto, coleta controlada e análise dos três tratamentos | #7 |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Personalização autenticada/secure messaging, proteção reversível por chave, recuperação, perfil físico definitivo e aceite NTAG 424 DNA/UID/NDEF/SDM online/offline | #4 e #5 para aceite integrado, hardware real; implementação administrativa pode começar agora |
+| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto, coleta controlada e análise dos três tratamentos | #7 e #12; planejamento/scripts podem começar antes |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração/reprodução final, versões identificadas, instalação limpa e material do TCC | #8 |
 
 ```mermaid
 flowchart LR
-  H["#12 NTAG 424 DNA"] --> S["#5 SDM na API"]
-  S --> O["#4 Offline"]
-  O --> R["#6 Reconciliação"]
+  O["#4 Offline"] --> R["#6 Reconciliação"]
+  S["#5 SDM na API"] --> R
   R --> I["#7 Instrumentação"]
   I --> E["#8 Experimentos"]
+  O --> H["#12 Aceite NTAG 424 DNA"]
+  S --> H
+  H --> E
   E --> F["#9 Entrega final"]
 ```
 
 Não criar issues menores para etapas já incluídas nessas entregas. O
 [plano #10](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/10) mantém as
 sub-issues e dependências nativas do GitHub.
+
+O aceite de mensagens físicas, escrita protegida, contador observado e fluxo
+SDM real fica na #12. A fila #4 não autentica evidência: testes de preservação de
+bytes SDM não exigem o verificador #5. A integração entre fila, verificador e
+decisões será conferida em #6 e a reprodução física dos três tratamentos em #12.
+O perfil candidato usado em #5 deve ter versão fixa; diferenças constatadas na
+bancada exigem revisão explícita, sem alterar provisionamentos antigos.
 
 ## Verificação desta publicação
 
