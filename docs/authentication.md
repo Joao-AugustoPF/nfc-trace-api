@@ -101,8 +101,12 @@ gravados nessas trilhas. Rotas auditadas usam o template do endpoint, não sua q
 
 ## Contrato para o mobile e a próxima fila offline
 
-O Nova-tag guarda token e metadados da sessão em react-native-keychain (Android Keystore),
-nunca a senha. Ao restaurar/retornar ao primeiro plano, verifica a sessão no servidor.
+O Nova-tag Expo guarda token e metadados da sessão em expo-secure-store (Android
+Keystore/iOS Keychain), nunca a senha. A branch nativa anterior usava
+react-native-keychain. Ao restaurar/retornar do background, verifica a sessão no servidor.
+O retorno breve da janela NFC do iOS apenas verifica a expiração local, preservando
+a leitura. O endereço da API salvo acompanha o token; uma mudança de endereço requer
+novo login, sem transferir o token para outro servidor.
 Erro de rede preserva o armazenamento para nova tentativa; 401 invalida a sessão local;
 403 não encerra a sessão. Não repetir POST automaticamente.
 
@@ -123,5 +127,7 @@ usar HTTPS; HTTP fica restrito ao desenvolvimento Android e ao laboratório loca
 `npm run test:all` exercita com PostgreSQL real a matriz de acesso, hash/token,
 revogação/expiração, administração, identidade forjada, idempotência entre sessões e
 operadores, rate limit, auditoria/outbox atômicas e migration de dados da v1.
-Login/Keychain e sincronização física são entregas distintas: NFC real é #1/#2,
-SDM é #5, e a fila durável ainda será implementada em #4.
+Login/SecureStore foram entregues na #3 e aprovados pelo mantenedor; integração
+dos PRs na main permanece separada. Personalização/proteção e aceite físico são
+#12, SDM autoritativo é #5, e a fila durável ainda será implementada em #4. Veja
+[entregas e pendências atuais](project-status.md).

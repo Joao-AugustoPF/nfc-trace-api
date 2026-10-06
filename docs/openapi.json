@@ -379,7 +379,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/OrderResponse"
+                      "$ref": "#/components/schemas/OrderDetailsResponse"
                     }
                   }
                 }
@@ -2710,6 +2710,134 @@
         "type": "object",
         "properties": {}
       },
+      "ProvisioningResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "etiquetaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uid": {
+            "type": "string"
+          },
+          "modelo": {
+            "type": "string"
+          },
+          "pedidoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "estrategia": {
+            "type": "string",
+            "enum": [
+              "UID",
+              "NDEF_ESTATICO"
+            ]
+          },
+          "epoca": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REGISTRADA",
+              "ATIVA",
+              "DESPROVISIONADA"
+            ]
+          },
+          "referenciaNdef": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ativadoEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "encerradoEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "etiquetaId",
+          "uid",
+          "modelo",
+          "pedidoId",
+          "estrategia",
+          "epoca",
+          "status",
+          "referenciaNdef",
+          "criadoEm",
+          "ativadoEm",
+          "encerradoEm"
+        ]
+      },
+      "OrderDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "CADASTRADO",
+              "COLETADO",
+              "RECEBIDO",
+              "ENTREGUE"
+            ]
+          },
+          "expedido": {
+            "type": "boolean"
+          },
+          "versao": {
+            "type": "number"
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provisionamentoVigente": {
+            "nullable": true,
+            "description": "Vínculo registrado ou ativo do pedido; null quando não há vínculo vigente.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProvisioningResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "descricao",
+          "estado",
+          "expedido",
+          "versao",
+          "criadoEm",
+          "provisionamentoVigente"
+        ]
+      },
       "AuthorshipResponse": {
         "type": "object",
         "properties": {
@@ -2848,79 +2976,6 @@
           "decisao"
         ]
       },
-      "ProvisioningResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "etiquetaId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "uid": {
-            "type": "string"
-          },
-          "modelo": {
-            "type": "string"
-          },
-          "pedidoId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "estrategia": {
-            "type": "string",
-            "enum": [
-              "UID",
-              "NDEF_ESTATICO"
-            ]
-          },
-          "epoca": {
-            "type": "number"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "REGISTRADA",
-              "ATIVA",
-              "DESPROVISIONADA"
-            ]
-          },
-          "referenciaNdef": {
-            "type": "string",
-            "nullable": true
-          },
-          "criadoEm": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "ativadoEm": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "encerradoEm": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "etiquetaId",
-          "uid",
-          "modelo",
-          "pedidoId",
-          "estrategia",
-          "epoca",
-          "status",
-          "referenciaNdef",
-          "criadoEm",
-          "ativadoEm",
-          "encerradoEm"
-        ]
-      },
       "ProvisionTagDto": {
         "type": "object",
         "properties": {
@@ -2995,7 +3050,7 @@
           },
           "bytesBase64": {
             "type": "string",
-            "description": "Bytes opcionais da leitura, codificados em Base64."
+            "description": "Mensagem NDEF original opcional, em Base64, sem NLEN/status APDU. Preservada exatamente; não comprova autenticidade nem é reavaliada como NDEF/SDM na v1. Omitir se o leitor não disponibilizar bytes originais."
           }
         },
         "required": [

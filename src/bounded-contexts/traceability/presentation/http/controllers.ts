@@ -30,6 +30,7 @@ import {
   HistoryResponse,
   ObservationResponse,
   OrderResponse,
+  OrderDetailsResponse,
   ProvisioningResponse,
 } from './responses';
 
@@ -60,7 +61,7 @@ export class OrdersController {
     return this.queries.orders(query.busca, { page: query.pagina, limit: query.limite });
   }
   @Get(':id')
-  @ApiSuccess(OrderResponse)
+  @ApiSuccess(OrderDetailsResponse)
   get(@Param('id', uuid) id: string) {
     return this.queries.order(id);
   }

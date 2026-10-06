@@ -101,7 +101,10 @@ export class ReadingDto {
   @IsString({ each: true })
   @MaxLength(64, { each: true })
   tecnologias?: string[];
-  @ApiPropertyOptional({ description: 'Bytes opcionais da leitura, codificados em Base64.' })
+  @ApiPropertyOptional({
+    description:
+      'Mensagem NDEF original opcional, em Base64, sem NLEN/status APDU. Preservada exatamente; não comprova autenticidade nem é reavaliada como NDEF/SDM na v1. Omitir se o leitor não disponibilizar bytes originais.',
+  })
   @Optional()
   @IsString()
   @MaxLength(16384)

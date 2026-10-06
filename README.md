@@ -98,6 +98,7 @@ A auditoria é alimentada depois pelo dispatcher. Reenvios recuperam a decisão 
 - [Contrato e integração do Nova-tag](docs/mobile-integration.md)
 - [Operação e recuperação da outbox](docs/operations.md)
 - [Contrato OpenAPI versionado](docs/openapi.json)
+- [Entregas concluídas e trabalho restante](docs/project-status.md)
 
 ## Limites da v1
 
@@ -110,6 +111,15 @@ A API recebe a referência NDEF já decodificada pelo aplicativo. Os bytes origi
 ser enviados separadamente em Base64. UID e NDEF estático identificam cadastros, mas não
 autenticam criptograficamente a etiqueta, o operador ou a movimentação física.
 
-O Nova-tag recebe login e gestão de sessão no seu próprio repositório. A issue #2 ainda
-precisa substituir os serviços operacionais simulados, gerar UUIDs das capturas e integrar
-o provisionamento físico em duas etapas. Testes de sessão não validam hardware NFC.
+O Nova-tag Expo (`codex/issue-1-sdm-bench-profile`) integra login/SecureStore,
+cadastro/busca de pedidos, UID/NDEF, provisionamento em duas etapas, encerramento,
+reutilização, eventos e histórico com a API real. Essas alterações
+ainda estão em branch separada da main do mobile. As entregas de software #1/#2/#3
+foram aprovadas; personalização/proteção e aceite físico estão concentrados na #12.
+Testes de sessão não validam hardware NFC.
+
+A branch acrescenta diagnóstico Type 4 (GET_VERSION, CC, GetFileSettings e NDEF original),
+timeout e cancelamento de sessões NFC. O relatório não ativa vínculos nem comprova
+SDM/proteção; falta bancada com NTAG 424 DNA, disponível apenas a Feiju do usuário.
+O roteiro e os limites estão nos guias 06 a 09 do Nova-tag. A fila atual está no
+[status do projeto](docs/project-status.md).

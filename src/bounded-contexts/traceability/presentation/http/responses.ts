@@ -25,6 +25,14 @@ export class ProvisioningResponse {
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) ativadoEm!: string | null;
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) encerradoEm!: string | null;
 }
+export class OrderDetailsResponse extends OrderResponse {
+  @ApiProperty({
+    type: ProvisioningResponse,
+    nullable: true,
+    description: 'Vínculo registrado ou ativo do pedido; null quando não há vínculo vigente.',
+  })
+  provisionamentoVigente!: ProvisioningResponse | null;
+}
 export class DecisionResponse {
   @ApiProperty() autorizada!: boolean;
   @ApiProperty() motivo!: string;
