@@ -1,23 +1,30 @@
 import { Controller, Get, Header, ServiceUnavailableException } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
+import { PublicAccess, AllowRoles } from '../access/http-security';
 
 @ApiExcludeController()
 @Controller()
 export class HealthController {
   constructor(private readonly source: DataSource) {}
-  @Get('health/live') live() {
+  @PublicAccess()
+  @Get('health/live')
+  live() {
     return { status: 'ok' };
   }
-  @Get('health/ready') async ready() {
+  @PublicAccess()
+  @Get('health/ready')
+  async ready() {
     try {
       await this.source.query('SELECT 1 FROM outbox LIMIT 1');
+      await this.source.query('SELECT token_hash FROM identity_sessions LIMIT 1');
       return { status: 'ready' };
     } catch {
       throw new ServiceUnavailableException('PostgreSQL ou migrations indisponíveis.');
     }
   }
   @Get('metrics')
+  @AllowRoles('ADMINISTRADOR')
   @Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
   async metrics(): Promise<string> {
     const rows: { status: string; total: string }[] = await this.source.query(

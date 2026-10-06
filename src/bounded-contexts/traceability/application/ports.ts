@@ -79,6 +79,7 @@ export interface HistoryEntry {
 export interface TraceabilityReader {
   orders(search: string | undefined, pagination: PageQuery): Promise<Page<OrderSnapshot>>;
   order(id: string): Promise<OrderSnapshot | null>;
+  currentProvisioning(orderId: string): Promise<ProvisioningDetails | null>;
   provisioning(id: string): Promise<ProvisioningDetails | null>;
   latestProvisioning(uid: string): Promise<ProvisioningDetails | null>;
   observation(id: string): Promise<ObservationRecord | null>;

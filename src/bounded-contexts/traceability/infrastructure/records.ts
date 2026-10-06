@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
 import {
   Decision,
   ObservationInput,
@@ -42,6 +43,8 @@ export class ProvisioningRecord {
 
 @Entity('observations')
 export class ObservationRow {
+  @Column('jsonb', { name: 'authenticated_actor', nullable: true })
+  authenticatedActor!: AuthenticatedActor | null;
   @PrimaryColumn('uuid') id!: string;
   @Column('uuid', { name: 'order_id', nullable: true }) orderId!: string | null;
   @Column('uuid', { name: 'provisioning_id' }) provisioningId!: string;

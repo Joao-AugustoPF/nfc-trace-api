@@ -4,8 +4,12 @@ API experimental do TCC para rastreabilidade logística por NFC. A v1 implementa
 provisionamento por UID ou NDEF estático, decisões sobre capturas e histórico logístico.
 É um monólito NestJS com domínio independente do framework e eventos persistidos em PostgreSQL.
 
-Esta versão roda no laboratório **sem login**. Operador, aparelho e bloqueio físico são declarações
-do cliente. SDM, sincronização offline e integração do aplicativo serão etapas posteriores.
+Esta versão exige **sessão autenticada e permissão por perfil**. A autoria verificada é
+separada do operador, aparelho e bloqueio físico declarados pelo cliente. SDM, fila offline
+e integração das operações NFC do aplicativo permanecem nas próximas entregas.
+
+Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
+[autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
 
 ## Iniciar com Docker
 
@@ -22,7 +26,7 @@ com o consumidor de eventos. As portas ficam vinculadas a `127.0.0.1`.
 - Swagger: <http://127.0.0.1:3000/docs>
 - OpenAPI: <http://127.0.0.1:3000/openapi.json>
 - Prontidão: <http://127.0.0.1:3000/health/ready>
-- Métricas: <http://127.0.0.1:3000/metrics>
+- Métricas: <http://127.0.0.1:3000/metrics> (Bearer de administrador)
 
 Para popular pedidos de exemplo:
 
@@ -68,7 +72,8 @@ Os testes limpam **somente esse banco de teste** a cada cenário.
 Jest 30 usa `--experimental-vm-modules` para carregar os pacotes ESM do NestJS 12 a partir
 dos testes CommonJS. O aviso experimental do Node é esperado.
 
-Com a API iniciada, `npm run demo` percorre o fluxo de entrega e reenvia cada captura.
+Com a API iniciada, definir `DEMO_LOGIN` e `DEMO_PASSWORD` de um administrador no ambiente;
+`npm run demo` autentica, percorre o fluxo de entrega e reenvia cada captura.
 Essa demonstração cria dados com leituras **simuladas**, identificados como `DEMO-*` e modelo
 `SIMULADA`; não representa validação do hardware NFC.
 
@@ -80,6 +85,7 @@ Essa demonstração cria dados com leituras **simuladas**, identificados como `D
 | `bounded-contexts/traceability/application` | Casos de uso, consultas e portas |
 | `bounded-contexts/traceability/infrastructure` | Repositórios TypeORM e mapeadores |
 | `bounded-contexts/traceability/presentation/http` | Contratos e controllers |
+| `bounded-contexts/identity` | Contas, sessões, permissões e portas de identidade |
 | `platform` | Banco, eventos duráveis, auditoria e observabilidade |
 | `bootstrap` | Composição e configuração NestJS |
 | `shared-kernel` | Erros e primitivas de eventos |
@@ -88,9 +94,11 @@ O fluxo de uma captura é `validar → avaliar → salvar captura/decisão/estad
 A auditoria é alimentada depois pelo dispatcher. Reenvios recuperam a decisão original.
 
 - [Arquitetura e decisões](docs/architecture.md)
+- [Autenticação, permissões e bootstrap](docs/authentication.md)
 - [Contrato e integração do Nova-tag](docs/mobile-integration.md)
 - [Operação e recuperação da outbox](docs/operations.md)
 - [Contrato OpenAPI versionado](docs/openapi.json)
+- [Entregas concluídas e trabalho restante](docs/project-status.md)
 
 ## Limites da v1
 
@@ -103,5 +111,15 @@ A API recebe a referência NDEF já decodificada pelo aplicativo. Os bytes origi
 ser enviados separadamente em Base64. UID e NDEF estático identificam cadastros, mas não
 autenticam criptograficamente a etiqueta, o operador ou a movimentação física.
 
-O Nova-tag permanece sem alterações neste repositório. A integração precisa substituir
-os serviços simulados, gerar os UUIDs das capturas e implementar o provisionamento em duas etapas.
+O Nova-tag Expo (`codex/issue-1-sdm-bench-profile`) integra login/SecureStore,
+cadastro/busca de pedidos, UID/NDEF, provisionamento em duas etapas, encerramento,
+reutilização, eventos e histórico com a API real. Essas alterações
+ainda estão em branch separada da main do mobile. As entregas de software #1/#2/#3
+foram aprovadas; personalização/proteção e aceite físico estão concentrados na #12.
+Testes de sessão não validam hardware NFC.
+
+A branch acrescenta diagnóstico Type 4 (GET_VERSION, CC, GetFileSettings e NDEF original),
+timeout e cancelamento de sessões NFC. O relatório não ativa vínculos nem comprova
+SDM/proteção; falta bancada com NTAG 424 DNA, disponível apenas a Feiju do usuário.
+O roteiro e os limites estão nos guias 06 a 09 do Nova-tag. A fila atual está no
+[status do projeto](docs/project-status.md).

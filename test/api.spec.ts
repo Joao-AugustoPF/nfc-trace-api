@@ -4,7 +4,7 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { createHttpApplication } from '../src/bootstrap/application';
 import { readConfig } from '../src/bootstrap/config';
-import { testDatabase, resetDatabase } from './support';
+import { testDatabase, resetDatabase, seedIdentity } from './support';
 
 const uid = '04AABBCCDDEE01';
 type Provisioned = { orderId: string; id: string; referenciaNdef: string | null };
@@ -12,7 +12,11 @@ type Provisioned = { orderId: string; id: string; referenciaNdef: string | null 
 describe('HTTP API with PostgreSQL', () => {
   let source: DataSource;
   let app: INestApplication;
-  const http = () => request(app.getHttpServer());
+  let token: string;
+  const http = () => ({
+    get: (path: string) => request(app.getHttpServer()).get(path).auth(token, { type: 'bearer' }),
+    post: (path: string) => request(app.getHttpServer()).post(path).auth(token, { type: 'bearer' }),
+  });
 
   beforeAll(async () => {
     source = await testDatabase();
@@ -28,6 +32,7 @@ describe('HTTP API with PostgreSQL', () => {
   });
   beforeEach(async () => {
     await resetDatabase(source);
+    token = (await seedIdentity(source)).token;
   });
 
   async function order(code = `LAB-${randomUUID()}`): Promise<string> {
@@ -72,6 +77,44 @@ describe('HTTP API with PostgreSQL', () => {
     expect(spec.body.paths['/api/v1/eventos'].post.responses['200']).toBeDefined();
     expect(spec.body.components.schemas.ObservationDto.required).toContain('leituraBruta');
   });
+  it.each(['UID', 'NDEF_ESTATICO'])(
+    'preserves exact binary evidence and detects changed bytes on retry (%s)',
+    async (strategy) => {
+      const p = await provision(strategy);
+      const originalBytes = Buffer.from([0xc1, 1, 0, 0, 0, 4, 0x55, 0, 0x61, 0x62, 0x63]);
+      const input = capture(p);
+      const observation = {
+        ...input,
+        leituraBruta: {
+          ...input.leituraBruta,
+          bytesBase64: originalBytes.toString('base64'),
+          tecnologias: ['IsoDep', 'NfcA'],
+        },
+      };
+      const first = await http().post('/api/v1/eventos').send(observation).expect(200);
+      expect(first.body.dados.decisao.autorizada).toBe(true);
+      const saved = await http().get(`/api/v1/eventos/${observation.id}`).expect(200);
+      expect(Buffer.from(saved.body.dados.leituraBruta.bytesBase64, 'base64')).toEqual(
+        originalBytes,
+      );
+      expect(saved.body.dados.leituraBruta.ndef).toBe(input.leituraBruta.ndef);
+      const repeated = await http().post('/api/v1/eventos').send(observation).expect(200);
+      expect(repeated.body.dados).toEqual(first.body.dados);
+      const conflict = await http()
+        .post('/api/v1/eventos')
+        .send({
+          ...observation,
+          leituraBruta: {
+            ...observation.leituraBruta,
+            bytesBase64: Buffer.from([0xd1, 1, 4, 0x55, 0, 0x61, 0x62, 0x63]).toString('base64'),
+          },
+        })
+        .expect(409);
+      expect(conflict.body.codigo).toBe('IDEMPOTENCIA_CONFLITO');
+      const history = await http().get(`/api/v1/pedidos/${p.orderId}/eventos`).expect(200);
+      expect(history.body.dados.total).toBe(2);
+    },
+  );
   it('creates normalized codes, rejects duplicates, searches and paginates', async () => {
     const id = await order(' tcc-001 ');
     const duplicate = await http().post('/api/v1/pedidos').send({ codigo: 'TCC-001' }).expect(409);
@@ -96,6 +139,65 @@ describe('HTTP API with PostgreSQL', () => {
       .send({ pedidoId: orderId, uid, modelo: 'NTAG424DNA', estrategia: 'DINAMICA' })
       .expect(422);
     expect(dynamic.body.codigo).toBe('ESTRATEGIA_INDISPONIVEL');
+  });
+  it('searches code or description literally, case insensitively and with pagination', async () => {
+    await http()
+      .post('/api/v1/pedidos')
+      .send({ codigo: 'LAB-ALFA', descricao: 'Caixa de ferramentas' })
+      .expect(201);
+    await http()
+      .post('/api/v1/pedidos')
+      .send({ codigo: 'LAB-BETA', descricao: 'Ferramentas 50%_\\' })
+      .expect(201);
+    await http()
+      .post('/api/v1/pedidos')
+      .send({ codigo: 'OTHER', descricao: 'Diversos' })
+      .expect(201);
+    const page = await http()
+      .get('/api/v1/pedidos')
+      .query({ busca: 'FERRAMENTAS', pagina: 2, limite: 1 })
+      .expect(200);
+    expect(page.body.dados.total).toBe(2);
+    expect(page.body.dados.itens.map((item: { codigo: string }) => item.codigo)).toEqual([
+      'LAB-BETA',
+    ]);
+    const literal = await http().get('/api/v1/pedidos').query({ busca: '%_\\' }).expect(200);
+    expect(literal.body.dados.total).toBe(1);
+    expect(literal.body.dados.itens[0].codigo).toBe('LAB-BETA');
+    const code = await http().get('/api/v1/pedidos').query({ busca: 'lab-alfa' }).expect(200);
+    expect(code.body.dados.total).toBe(1);
+  });
+  it('returns the current pending or active link in order details and removes only the link on closure', async () => {
+    const p = await provision('UID', false);
+    const pending = await http().get(`/api/v1/pedidos/${p.orderId}`).expect(200);
+    expect(pending.body.dados.provisionamentoVigente).toMatchObject({
+      id: p.id,
+      uid,
+      epoca: 1,
+      status: 'REGISTRADA',
+    });
+    await http()
+      .post(`/api/v1/provisionamentos/${p.id}/ativacao`)
+      .send({ bloqueioConfirmado: true })
+      .expect(200);
+    const active = await http().get(`/api/v1/pedidos/${p.orderId}`).expect(200);
+    expect(active.body.dados.provisionamentoVigente.status).toBe('ATIVA');
+    await http().post(`/api/v1/provisionamentos/${p.id}/encerramento`).expect(200);
+    const closed = await http().get(`/api/v1/pedidos/${p.orderId}`).expect(200);
+    expect(closed.body.dados.provisionamentoVigente).toBeNull();
+    expect(closed.body.dados.estado).toBe('CADASTRADO');
+    const history = await http().get(`/api/v1/pedidos/${p.orderId}/eventos`).expect(200);
+    expect(history.body.dados.total).toBe(1);
+    const next = await http()
+      .post('/api/v1/etiquetas')
+      .send({ pedidoId: p.orderId, uid, modelo: 'NTAG424DNA', estrategia: 'UID' })
+      .expect(201);
+    const renewed = await http().get(`/api/v1/pedidos/${p.orderId}`).expect(200);
+    expect(renewed.body.dados.provisionamentoVigente).toMatchObject({
+      id: next.body.dados.id,
+      epoca: 2,
+      status: 'REGISTRADA',
+    });
   });
   it('reports malformed and oversized JSON with stable errors', async () => {
     const malformed = await http()

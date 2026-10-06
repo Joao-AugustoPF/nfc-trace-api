@@ -23,7 +23,8 @@
     "openapi": "ts-node scripts/openapi.ts",
     "demo": "node scripts/demo.mjs",
     "format": "prettier --write src test scripts",
-    "format:check": "prettier --check src test scripts"
+    "format:check": "prettier --check src test scripts",
+    "auth:bootstrap": "ts-node src/platform/access/bootstrap-cli.ts"
   },
   "dependencies": {
     "@nestjs/common": "12.1.0",

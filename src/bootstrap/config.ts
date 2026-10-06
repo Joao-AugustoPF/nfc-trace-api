@@ -6,6 +6,7 @@ export interface AppConfig {
   pollMs: number;
   leaseMs: number;
   batchSize: number;
+  sessionSeconds: number;
 }
 
 function integer(value: string | undefined, fallback: number, min: number, max: number): number {
@@ -30,5 +31,6 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     pollMs: integer(env.OUTBOX_POLL_MS, 1000, 10, 60000),
     leaseMs: integer(env.OUTBOX_LEASE_MS, 30000, 100, 300000),
     batchSize: integer(env.OUTBOX_BATCH_SIZE, 25, 1, 100),
+    sessionSeconds: integer(env.AUTH_SESSION_SECONDS, 28800, 60, 86400),
   };
 }

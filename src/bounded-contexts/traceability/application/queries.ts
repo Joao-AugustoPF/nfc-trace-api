@@ -20,7 +20,12 @@ export class TraceabilityQueries {
     return pageView(await this.reader.orders(search?.trim(), pagination), orderView);
   }
   async order(id: string) {
-    return orderView(required(await this.reader.order(id), 'PEDIDO_NAO_ENCONTRADO'));
+    const order = required(await this.reader.order(id), 'PEDIDO_NAO_ENCONTRADO');
+    const provisioning = await this.reader.currentProvisioning(id);
+    return {
+      ...orderView(order),
+      provisionamentoVigente: provisioning ? provisioningView(provisioning) : null,
+    };
   }
   async provisioning(id: string) {
     return provisioningView(required(await this.reader.provisioning(id), 'VINCULO_NAO_ENCONTRADO'));
@@ -42,6 +47,7 @@ export class TraceabilityQueries {
       recebidoEm: item.receivedAt,
       provisionamentoId: item.provisioningId,
       origem: item.observation ? 'CAPTURA' : 'SISTEMA',
+      autoria: item.observation ? observationView(item.observation).autoria : null,
       decisao: item.observation
         ? observationView(item.observation).decisao
         : {

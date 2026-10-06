@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import {
   HistoryEntry,
   Page,
@@ -14,7 +14,9 @@ export class TypeOrmTraceabilityReader implements TraceabilityReader {
   async orders(search: string | undefined, pagination: PageQuery) {
     const query = this.source.getRepository(OrderRecord).createQueryBuilder('o');
     if (search)
-      query.where('o.code ILIKE :search', { search: `%${search.replace(/[\\%_]/g, '\\$&')}%` });
+      query.where('(o.code ILIKE :search OR o.description ILIKE :search)', {
+        search: `%${search.replace(/[\\%_]/g, '\\$&')}%`,
+      });
     const [items, total] = await query
       .orderBy('o.code', 'ASC')
       .addOrderBy('o.id', 'ASC')
@@ -29,6 +31,14 @@ export class TypeOrmTraceabilityReader implements TraceabilityReader {
   }
   async provisioning(id: string): Promise<ProvisioningDetails | null> {
     const row = await this.source.manager.findOneBy(ProvisioningRecord, { id });
+    if (!row) return null;
+    const tag = await this.source.manager.findOneByOrFail(TagRecord, { id: row.tagId });
+    return { provisioning: toProvisioningSnapshot(row), tag: toTag(tag) };
+  }
+  async currentProvisioning(orderId: string): Promise<ProvisioningDetails | null> {
+    const row = await this.source.manager.findOne(ProvisioningRecord, {
+      where: { orderId, status: In(['REGISTRADA', 'ATIVA']) },
+    });
     if (!row) return null;
     const tag = await this.source.manager.findOneByOrFail(TagRecord, { id: row.tagId });
     return { provisioning: toProvisioningSnapshot(row), tag: toTag(tag) };
