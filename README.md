@@ -8,7 +8,8 @@ Esta versão exige **sessão autenticada e permissão por perfil**. A autoria ve
 separada do operador, aparelho e bloqueio físico declarados pelo cliente. O Nova-tag
 integra UID/NDEF e fila offline SQLite; a API recebe lotes com resultado por item.
 O SDM usa um perfil candidato versionado, chaves cifradas e políticas estrita/tardia.
-Reconciliação e aceite físico completo permanecem nas próximas entregas.
+Reconciliação durável e decisões versionadas estão disponíveis; aceite físico
+completo permanece na #12. Veja [políticas e reprodução](docs/reconciliation.md).
 
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
@@ -108,16 +109,17 @@ A auditoria é alimentada depois pelo dispatcher. Reenvios recuperam a decisão 
 
 Um pedido representa um volume e tem um vínculo vigente, incluindo vínculos pendentes.
 Os estados são `CADASTRADO → COLETADO → RECEBIDO → ENTREGUE`; movimentação e expedição
-são marcos adicionais. Capturas incompatíveis ficam no histórico com decisão rejeitada.
-Não existe reconciliação automática de eventos fora de ordem nesta versão.
+são marcos adicionais. Capturas sem antecedente podem ficar
+pendentes e ser reconciliadas; rejeições definitivas e SDM tardio continuam no histórico
+sem movimentação automática. Cada decisão e o recibo original são preservados.
 
 A API recebe a referência NDEF já decodificada pelo aplicativo. Os bytes originais podem
 ser enviados separadamente em Base64. UID e NDEF estático identificam cadastros, mas não
 autenticam criptograficamente a etiqueta, o operador ou a movimentação física.
 
-O Nova-tag Expo (`codex/issue-4-durable-offline`) integra login/SecureStore,
+O Nova-tag Expo (`codex/issue-6-event-reconciliation`) integra login/SecureStore,
 cadastro/busca de pedidos, UID/NDEF, provisionamento em duas etapas, encerramento,
-reutilização, eventos, histórico e fila durável com a API real. Essas alterações
+reutilização, eventos, histórico, fila durável e acompanhamento de decisões com a API real. Essas alterações
 ainda estão em branch separada da main do mobile. As entregas de software #1/#2/#3
 foram aprovadas; personalização/proteção e aceite físico estão concentrados na #12.
 Testes de sessão não validam hardware NFC.

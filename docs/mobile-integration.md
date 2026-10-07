@@ -148,7 +148,10 @@ Uma resposta HTTP 200 sempre representa uma captura durável:
     "armazenada": true,
     "decisao": {
       "autorizada": false,
-      "motivo": "SEQUENCIA_INVALIDA",
+      "motivo": "AGUARDANDO_ANTECEDENTE",
+      "status": "PENDENTE",
+      "revisao": 1,
+      "dependencias": [{"tipo":"COLETA","estadoNecessario":"COLETADO"}],
       "classificacao": "REGULAR",
       "evidencia": "IDENTIFICADA",
       "alterouEstado": false,
@@ -162,7 +165,10 @@ Uma resposta HTTP 200 sempre representa uma captura durável:
 
 O exemplo omite os campos de captura devolvidos em `dados`. O app deve verificar
 `dados.decisao.autorizada` antes de informar que uma operação logística foi aceita.
-Uma captura rejeitada não deve ser reenviada indefinidamente: a decisão da v1 é definitiva.
+Uma rejeição definitiva não deve ser reenviada indefinidamente. Pendência logística
+é acompanhada por GET/histórico; retry POST preserva o recibo original, mesmo após
+reavaliação. Campos de revisão, prazo, dependências e histórico em
+[reconciliação](reconciliation.md).
 Uma nova leitura/ação terá outro UUID; repetição de transporte mantém o UUID original.
 
 ## Erros e consultas
@@ -186,7 +192,7 @@ Rejeições de domínio de capturas, como `VINCULO_INATIVO`, `VINCULO_NAO_ENCONT
 `UID_DIVERGENTE`, `NDEF_DIVERGENTE`, `EVENTO_RESERVADO` e `SEQUENCIA_INVALIDA`,
 aparecem na decisão de uma resposta 200. Não são erros de transporte.
 
-`GET /eventos/{id}` recupera uma captura. `GET /pedidos/{id}/eventos` retorna histórico
+`GET /eventos/{id}` recupera uma captura, sua decisão atual e todas as revisões. `GET /pedidos/{id}/eventos` retorna histórico
 paginado, incluindo rejeições associadas ao pedido e marcos de provisionamento.
 Os horários de ocorrência e recebimento são apresentados separadamente. O histórico
 é ordenado por recebimento, com UUID como desempate.

@@ -69,15 +69,15 @@ em capturas distintas não é idempotência nem proteção contra replay de evid
 - Envio automático em primeiro plano, ao retornar ao app ou recuperar conexão;
   também há botão **Sincronizar agora**. Não há serviço de background nem garantia
   de execução com o app fechado. A próxima abertura recupera os registros.
-- Estados de transporte e negócio separados. `AGUARDANDO_ANTECEDENTE` está preparado
-  para #6, mas a API atual não reavalia rejeições nem produz essa pendência.
+- Estados de transporte e negócio separados. `AGUARDANDO_ANTECEDENTE` é produzido
+  pela reconciliação #6, com prazo, dependências e revisões append-only.
   Consulta posterior atualiza a projeção da decisão sem editar a entrada ou recibo.
 
 Não há associação posterior de etiquetas desconhecidas: a tela informa a limitação
 antes de confirmar a captura. Provisionamento/ativação continuam online. Bytes SDM
 são opacos ao armazenamento; fixtures de preservação não autenticam SDM.
 O [verificador #5](sdm-validation.md) já avalia as mensagens no servidor; 503 do
-cofre mantém retry. Reconciliação/versionamento é #6 e aceite NFC físico é #12.
+cofre mantém retry. [Reconciliação/versionamento](reconciliation.md) foi entregue em #6 e aceite NFC físico é #12.
 
 ## Verificação local
 

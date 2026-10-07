@@ -10,6 +10,7 @@ import { envelopes } from './event-factory';
 import { observationView } from './views';
 import { evaluateSdmCounter } from '../domain/sdm';
 import { SdmCryptography } from './sdm-ports';
+import { missingAntecedents } from '../domain/dependencies';
 
 export function normalizeObservation(input: ObservationInput): ObservationInput {
   return {
@@ -84,6 +85,12 @@ export class RecordObservation {
       const now = this.clock.now();
       const previousState = order?.snapshot().state ?? null;
       const decision: Decision = {
+        revision: 1,
+        evaluatedAt: now,
+        causeId: null,
+        status: 'REJEITADA',
+        dependencies: [],
+        expiresAt: null,
         accepted: false,
         reason: 'VINCULO_NAO_ENCONTRADO',
         classification: 'SUSPEITO',
@@ -156,14 +163,35 @@ export class RecordObservation {
             }
           }
           if (eligible) {
-            const outcome = order.apply(input.tipo);
-            decision.accepted = outcome.accepted;
-            decision.reason = outcome.reason;
-            decision.stateChanged = outcome.changed;
-            decision.resultingState = order.snapshot().state;
+            const permission = await tx.authorization.check(actor, now);
+            // Internal legacy commands can still record synchronous effects, but cannot
+            // create deferred work without a verified, revocable identity.
+            if (actor && !permission.allowed) decision.reason = permission.reason;
+            else {
+              const outcome = order.apply(input.tipo);
+              decision.accepted = outcome.accepted;
+              decision.reason = outcome.reason;
+              decision.stateChanged = outcome.changed;
+              decision.resultingState = order.snapshot().state;
+              const dependencies = missingAntecedents(input.tipo, order.snapshot().state);
+              if (!outcome.accepted && dependencies.length && permission.allowed) {
+                decision.status = 'PENDENTE';
+                decision.reason = 'AGUARDANDO_ANTECEDENTE';
+                decision.dependencies = dependencies;
+                const deadline = new Date(Date.parse(now) + 24 * 60 * 60 * 1000).toISOString();
+                decision.expiresAt =
+                  permission.expiresAt && permission.expiresAt < deadline
+                    ? permission.expiresAt
+                    : deadline;
+              } else if (!outcome.accepted && order.snapshot().state === 'ENTREGUE') {
+                decision.reason = 'PEDIDO_JA_ENTREGUE';
+              }
+            }
           }
         }
       }
+      if (decision.accepted) decision.status = 'AUTORIZADA';
+      else if (decision.sdm?.temporalidade === 'TARDIA') decision.status = 'TARDIA';
       const observation: ObservationRecord = {
         authenticatedActor: actor,
         input,
@@ -196,12 +224,35 @@ export class RecordObservation {
             provisionamentoId: input.provisionamentoId,
             autorizada: decision.accepted,
             motivo: decision.reason,
+            status: decision.status,
+            revisao: decision.revision,
+            dependencias: decision.dependencies,
+            expiraEm: decision.expiresAt,
             classificacao: decision.classification,
             ...(decision.sdm ? { sdm: decision.sdm } : {}),
           },
         },
       ];
       await tx.outbox.append(envelopes(events, this.ids, now, correlationId, input.id, actor));
+      if (decision.status === 'PENDENTE') {
+        await tx.outbox.append(
+          envelopes(
+            [
+              {
+                type: 'ReconciliacaoPrazo',
+                aggregateId: input.id,
+                payload: { pedidoId: observation.orderId },
+              },
+            ],
+            this.ids,
+            now,
+            correlationId,
+            input.id,
+            actor,
+          ),
+          decision.expiresAt!,
+        );
+      }
       return observationView(observation);
     });
   }

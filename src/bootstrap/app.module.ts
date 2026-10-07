@@ -34,6 +34,9 @@ import {
 } from '../bounded-contexts/identity/presentation/http/controller';
 import { AuthenticationGuard } from '../platform/access/http-security';
 import { NodeSdmCryptography } from '../bounded-contexts/traceability/infrastructure/sdm-crypto';
+import { captureAuthorization } from '../platform/access/capture-authorization';
+import { ReconciliationConsumer } from '../platform/messaging/reconciliation-consumer';
+import { ReconcileObservations } from '../bounded-contexts/traceability/application/reconcile-observations';
 
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(
@@ -48,7 +51,7 @@ class DatabaseLifecycle implements OnApplicationShutdown {
 @Module({})
 export class AppModule {
   static register(config: AppConfig, source: DataSource, ownsSource = true): DynamicModule {
-    const uow = new TypeOrmUnitOfWork(source);
+    const uow = new TypeOrmUnitOfWork(source, captureAuthorization);
     const clock = new SystemClock();
     const ids = new NodeIds();
     const sdm = new NodeSdmCryptography(config.sdmMasterVersion, config.sdmMasterKeysJson);
@@ -56,10 +59,14 @@ export class AppModule {
     const passwords = new ScryptPasswords();
     const tokens = new OpaqueTokens();
     const authenticate = new Authenticate(identity, tokens);
-    const dispatcher = new OutboxDispatcher(source, [new AuditConsumer()], {
-      batchSize: config.batchSize,
-      leaseMs: config.leaseMs,
-    });
+    const dispatcher = new OutboxDispatcher(
+      source,
+      [new AuditConsumer(), new ReconciliationConsumer(new ReconcileObservations(clock, ids))],
+      {
+        batchSize: config.batchSize,
+        leaseMs: config.leaseMs,
+      },
+    );
     return {
       module: AppModule,
       controllers:

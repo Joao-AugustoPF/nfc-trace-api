@@ -3,6 +3,24 @@ import { Order, OrderSnapshot } from '../domain/order';
 import { Provisioning, ProvisioningSnapshot } from '../domain/provisioning';
 import { Movement, ObservationRecord, TagSnapshot } from '../domain/types';
 import { SdmRepository } from './sdm-ports';
+import { AuthenticatedActor } from '../../../shared-kernel/actor';
+import { Decision } from '../domain/types';
+
+export interface CaptureAuthorization {
+  check(
+    actor: AuthenticatedActor | null,
+    now: string,
+  ): Promise<{
+    allowed: boolean;
+    reason: string;
+    expiresAt: string | null;
+  }>;
+}
+export interface DecisionRepository {
+  pending(orderId: string): Promise<ObservationRecord[]>;
+  pendingOrders(userId: string): Promise<string[]>;
+  append(id: string, decision: Decision): Promise<void>;
+}
 
 export interface Clock {
   now(): string;
@@ -40,10 +58,12 @@ export interface MovementRepository {
   insert(movement: Movement): Promise<void>;
 }
 export interface OutboxWriter {
-  append(envelopes: EventEnvelope[]): Promise<void>;
+  append(envelopes: EventEnvelope[], availableAt?: string): Promise<void>;
 }
 
 export interface Transaction {
+  authorization: CaptureAuthorization;
+  decisions: DecisionRepository;
   sdm: SdmRepository;
   orders: OrderRepository;
   tags: TagRepository;

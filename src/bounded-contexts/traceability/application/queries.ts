@@ -47,10 +47,19 @@ export class TraceabilityQueries {
       recebidoEm: item.receivedAt,
       provisionamentoId: item.provisioningId,
       origem: item.observation ? 'CAPTURA' : 'SISTEMA',
+      historicoDecisoes: item.observation
+        ? observationView(item.observation).historicoDecisoes
+        : [],
       autoria: item.observation ? observationView(item.observation).autoria : null,
       decisao: item.observation
         ? observationView(item.observation).decisao
         : {
+            revisao: 1,
+            status: 'AUTORIZADA',
+            avaliadaEm: item.receivedAt,
+            causaId: null,
+            expiraEm: null,
+            dependencias: [],
             autorizada: true,
             motivo: 'VINCULO_ATIVADO',
             classificacao: 'REGULAR',

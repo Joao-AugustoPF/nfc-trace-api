@@ -108,7 +108,7 @@ ativação. Nenhuma chave de etiqueta é recebida ou devolvida na interface HTTP
 
 O dispatcher reivindica eventos com `FOR UPDATE SKIP LOCKED`, token de posse e lease.
 Ao entregar, bloqueia novamente a linha e verifica o token para excluir workers antigos.
-Inbox, efeito de auditoria e confirmação da outbox usam uma única transação. Falhas fazem
+Inbox, efeitos de auditoria/reconciliação e confirmação da outbox usam uma única transação. Falhas fazem
 rollback e reagendam a entrega, até cinco tentativas. Também existe recuperação de leases
 expirados e reprocessamento explícito de eventos FAILED.
 
@@ -122,7 +122,7 @@ Autenticação foi entregue no contexto `identity`, com sessões revogáveis, pe
 fronteira HTTP e autoria verificada registrada separadamente das declarações (ver
 [ADR 006](authentication.md)). A fila SQLite e o lote foram entregues em #4.
 SDM foi entregue em #5 com perfil candidato, cofre e contador por época. Reconciliação
-durável/versionada é #6; perfil e aceite físico definitivos permanecem em #12.
+durável/versionada foi entregue em #6; perfil e aceite físico definitivos permanecem em #12.
 
 ## ADR 007 — SDM e reserva de evidência
 
@@ -144,3 +144,13 @@ privado com ACL/mode restrito e caminho ignorado. Auditoria contém referências
 sem segredos. Distribuição/personalização, proteção de escrita e secure messaging
 são #12; não fazem parte da captura operacional. Detalhes, vetores, limitações
 de frescor e recuperação em [SDM](sdm-validation.md).
+
+## ADR 008 — Pendências e decisões versionadas
+
+Recibo original e revisões append-only são separados da projeção atual. Somente
+prerequisitos futuros, evidência elegível e identidade verificada criam pendências.
+Outbox agenda o prazo e dispara reavaliação por avanço do pedido, encerramento ou
+revogação. Consumidor com inbox usa o mesmo bloqueio de pedido e a transação de
+entrega, sem dependência de ORM na aplicação. Estratégia/época/autoria permanecem
+as originais; a reserva SDM é conferida sem consumo novo. Prazo, ordenação,
+migração v1 e distinção POST original/GET atual em [reconciliação](reconciliation.md).

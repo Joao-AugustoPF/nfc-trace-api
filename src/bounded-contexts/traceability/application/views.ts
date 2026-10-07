@@ -1,6 +1,6 @@
 import { ndefReference } from '../domain/values';
 import { OrderSnapshot } from '../domain/order';
-import { ObservationRecord } from '../domain/types';
+import { Decision, ObservationRecord } from '../domain/types';
 import { ProvisioningDetails } from './ports';
 import { sdmUri } from '../domain/sdm';
 
@@ -55,15 +55,29 @@ export const observationView = (o: ObservationRecord) => ({
     sessaoId: o.authenticatedActor?.sessionId ?? null,
     perfil: o.authenticatedActor?.role ?? null,
   },
-  decisao: {
-    autorizada: o.decision.accepted,
-    motivo: o.decision.reason,
-    classificacao: o.decision.classification,
-    evidencia: o.decision.evidence,
-    alterouEstado: o.decision.stateChanged,
-    estadoAnterior: o.decision.previousState,
-    estadoResultante: o.decision.resultingState,
-    avisos: o.decision.warnings,
-    ...(o.decision.sdm ? { sdm: o.decision.sdm } : {}),
-  },
+  decisao: decisionView(o.decision, o.receivedAt),
+  historicoDecisoes: (o.revisions ?? [o.decision]).map((d) => decisionView(d, o.receivedAt)),
+});
+
+export const decisionView = (d: Decision, receivedAt: string) => ({
+  revisao: d.revision ?? 1,
+  status:
+    d.status ??
+    (d.accepted ? 'AUTORIZADA' : d.sdm?.temporalidade === 'TARDIA' ? 'TARDIA' : 'REJEITADA'),
+  avaliadaEm: d.evaluatedAt ?? receivedAt,
+  causaId: d.causeId ?? null,
+  expiraEm: d.expiresAt ?? null,
+  dependencias: (d.dependencies ?? []).map((dep) => ({
+    tipo: dep.event,
+    estadoNecessario: dep.state,
+  })),
+  autorizada: d.accepted,
+  motivo: d.reason,
+  classificacao: d.classification,
+  evidencia: d.evidence,
+  alterouEstado: d.stateChanged,
+  estadoAnterior: d.previousState,
+  estadoResultante: d.resultingState,
+  avisos: d.warnings,
+  ...(d.sdm ? { sdm: d.sdm } : {}),
 });

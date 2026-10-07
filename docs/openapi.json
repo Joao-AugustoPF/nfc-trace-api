@@ -3053,36 +3053,27 @@
           "provisionamentoVigente"
         ]
       },
-      "AuthorshipResponse": {
+      "DependencyResponse": {
         "type": "object",
         "properties": {
           "tipo": {
             "type": "string",
             "enum": [
-              "AUTENTICADA",
-              "DECLARADA"
+              "COLETA",
+              "RECEBIMENTO"
             ]
           },
-          "usuarioId": {
+          "estadoNecessario": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "sessaoId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "perfil": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "COLETADO",
+              "RECEBIDO"
+            ]
           }
         },
         "required": [
           "tipo",
-          "usuarioId",
-          "sessaoId",
-          "perfil"
+          "estadoNecessario"
         ]
       },
       "SdmDecisionResponse": {
@@ -3139,6 +3130,39 @@
       "DecisionResponse": {
         "type": "object",
         "properties": {
+          "revisao": {
+            "type": "number",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AUTORIZADA",
+              "PENDENTE",
+              "REJEITADA",
+              "TARDIA"
+            ]
+          },
+          "avaliadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "causaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "expiraEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dependencias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DependencyResponse"
+            }
+          },
           "sdm": {
             "$ref": "#/components/schemas/SdmDecisionResponse"
           },
@@ -3182,6 +3206,12 @@
           }
         },
         "required": [
+          "revisao",
+          "status",
+          "avaliadaEm",
+          "causaId",
+          "expiraEm",
+          "dependencias",
           "autorizada",
           "motivo",
           "classificacao",
@@ -3192,9 +3222,47 @@
           "avisos"
         ]
       },
+      "AuthorshipResponse": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "AUTENTICADA",
+              "DECLARADA"
+            ]
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sessaoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "perfil": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tipo",
+          "usuarioId",
+          "sessaoId",
+          "perfil"
+        ]
+      },
       "HistoryResponse": {
         "type": "object",
         "properties": {
+          "historicoDecisoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionResponse"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -3235,6 +3303,7 @@
           }
         },
         "required": [
+          "historicoDecisoes",
           "id",
           "tipo",
           "ocorridoEm",
@@ -3398,6 +3467,13 @@
             "minimum": -180,
             "maximum": 180
           },
+          "historicoDecisoes": {
+            "description": "POST retorna o recibo original; GET retorna a projeção e todas as revisões.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionResponse"
+            }
+          },
           "autoria": {
             "$ref": "#/components/schemas/AuthorshipResponse"
           },
@@ -3430,6 +3506,7 @@
           "ocorridoEm",
           "dispositivoId",
           "leituraBruta",
+          "historicoDecisoes",
           "autoria",
           "armazenada",
           "pedidoId",

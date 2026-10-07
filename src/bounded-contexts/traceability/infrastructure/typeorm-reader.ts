@@ -6,8 +6,9 @@ import {
   ProvisioningDetails,
   TraceabilityReader,
 } from '../application/ports';
-import { DecisionRow, ObservationRow, OrderRecord, ProvisioningRecord, TagRecord } from './records';
-import { toObservation, toOrderSnapshot, toProvisioningSnapshot, toTag } from './mappers';
+import { OrderRecord, ProvisioningRecord, TagRecord } from './records';
+import { toOrderSnapshot, toProvisioningSnapshot, toTag } from './mappers';
+import { readCurrentObservation } from './decision-store';
 
 export class TypeOrmTraceabilityReader implements TraceabilityReader {
   constructor(private readonly source: DataSource) {}
@@ -52,10 +53,7 @@ export class TypeOrmTraceabilityReader implements TraceabilityReader {
     return row ? { provisioning: toProvisioningSnapshot(row), tag: toTag(tag) } : null;
   }
   async observation(id: string) {
-    const row = await this.source.manager.findOneBy(ObservationRow, { id });
-    if (!row) return null;
-    const decision = await this.source.manager.findOneByOrFail(DecisionRow, { observationId: id });
-    return toObservation(row, decision);
+    return readCurrentObservation(this.source.manager, id);
   }
   async history(orderId: string, pagination: PageQuery): Promise<Page<HistoryEntry>> {
     // Provisioning is system-originated. Other accepted movements already have an observation.
