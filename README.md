@@ -11,6 +11,11 @@ O SDM usa um perfil candidato versionado, chaves cifradas e políticas estrita/t
 Reconciliação durável e decisões versionadas estão disponíveis; aceite físico
 completo permanece na #12. Veja [políticas e reprodução](docs/reconciliation.md).
 
+Instrumentação #7 disponível: roteiro/observação independente, diário durável de
+tentativas no Nova-tag, medidas monotônicas, exportação JSON/CSV, integridade e
+cenários reproduzíveis. Veja [contrato e coleta instrumental](docs/experimentation.md).
+Fixtures e reexecuções são identificadas; piloto/análise física continuam na #8/#12.
+
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
 

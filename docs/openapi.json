@@ -2754,6 +2754,1067 @@
           "Usuários"
         ]
       }
+    },
+    "/api/v1/experimentos": {
+      "post": {
+        "operationId": "ExperimentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/StoredRun"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Planejar execução; versões/configurações declaradas, sem credenciais",
+        "tags": [
+          "Experimentos"
+        ]
+      },
+      "get": {
+        "operationId": "ExperimentsController_list",
+        "parameters": [
+          {
+            "name": "pagina",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limite",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/RunsPage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Experimentos"
+        ]
+      }
+    },
+    "/api/v1/experimentos/{id}/tentativas": {
+      "post": {
+        "operationId": "ExperimentsController_trial",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/StoredTrial"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Experimentos"
+        ]
+      },
+      "get": {
+        "operationId": "ExperimentsController_trials",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limite",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/TrialsPage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Experimentos"
+        ]
+      }
+    },
+    "/api/v1/experimentos/tentativas/{id}/observacao-independente": {
+      "post": {
+        "operationId": "ExperimentsController_truth",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TruthDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/StoredTruth"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acrescentar ground truth do observador; correções geram nova revisão",
+        "tags": [
+          "Experimentos"
+        ]
+      }
+    },
+    "/api/v1/experimentos/registros": {
+      "post": {
+        "operationId": "ExperimentsController_record",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientRecordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/StoredClientRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Guardar estágio imutável; mesmo UUID/conteúdo retorna o registro original",
+        "tags": [
+          "Experimentos"
+        ]
+      }
+    },
+    "/api/v1/experimentos/{id}/exportacao": {
+      "get": {
+        "description": "Leitura sem alterar dados. Campos de dataset em inglês são o contrato de exportação v1. Dados sintéticos não constituem aceite físico.",
+        "operationId": "ExperimentsController_export",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/ExperimentExport"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Snapshot JSON versionado, checksum SHA-256, integridade e métricas",
+        "tags": [
+          "Experimentos"
+        ]
+      }
     }
   },
   "info": {
@@ -3803,6 +4864,765 @@
           "usuarioId",
           "sessoesRevogadas",
           "ativo"
+        ]
+      },
+      "ConfigurationDto": {
+        "type": "object",
+        "properties": {
+          "tagModel": {
+            "type": "string"
+          },
+          "antenna": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "phoneCase": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 300000
+          }
+        },
+        "required": [
+          "tagModel",
+          "antenna",
+          "position",
+          "surface",
+          "phoneCase",
+          "timeoutMs"
+        ]
+      },
+      "RunDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataKind": {
+            "type": "string",
+            "enum": [
+              "SINTETICO",
+              "FISICO"
+            ]
+          },
+          "protocolVersion": {
+            "type": "string"
+          },
+          "apiVersion": {
+            "type": "string"
+          },
+          "mobileVersion": {
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ConfigurationDto"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "dataKind",
+          "protocolVersion",
+          "apiVersion",
+          "mobileVersion",
+          "configuration"
+        ]
+      },
+      "StoredRun": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "input": {
+            "$ref": "#/components/schemas/RunDto"
+          }
+        },
+        "required": [
+          "userId",
+          "recordedAt",
+          "input"
+        ]
+      },
+      "RunsPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredRun"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ExportTrialInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tagLabel": {
+            "type": "string"
+          },
+          "boxLabel": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "deviceModel": {
+            "type": "string"
+          },
+          "osVersion": {
+            "type": "string"
+          },
+          "provisioningId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatment": {
+            "type": "string",
+            "enum": [
+              "UID",
+              "NDEF_ESTATICO",
+              "SDM"
+            ]
+          },
+          "policy": {
+            "type": "string",
+            "enum": [
+              "ESTRITA",
+              "REGISTRO_TARDIO"
+            ],
+            "nullable": true
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "LEGITIMO_ONLINE",
+              "LEGITIMO_OFFLINE",
+              "DUPLICACAO",
+              "CONCORRENCIA",
+              "RESPOSTA_PERDIDA",
+              "REORDENACAO",
+              "NDEF_COPIADO",
+              "UID_DIVERGENTE",
+              "BYTES_ALTERADOS",
+              "CONTEXTO_ALTERADO",
+              "SDM_REUTILIZADO",
+              "PRIMEIRA_APRESENTACAO_TARDIA",
+              "TRANSFERENCIA_ETIQUETA"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "LEITURA_FISICA",
+              "REEXECUCAO",
+              "SINTETICA"
+            ]
+          },
+          "ordinal": {
+            "type": "number"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "PROVISIONAMENTO",
+              "COLETA",
+              "RECEBIMENTO",
+              "MOVIMENTACAO",
+              "EXPEDICAO",
+              "ENTREGA"
+            ]
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "tagLabel",
+          "boxLabel",
+          "deviceId",
+          "deviceModel",
+          "osVersion",
+          "provisioningId",
+          "treatment",
+          "policy",
+          "scenario",
+          "mode",
+          "ordinal",
+          "eventType",
+          "runId"
+        ]
+      },
+      "StoredTrial": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ExportTrialInput"
+          }
+        },
+        "required": [
+          "userId",
+          "recordedAt",
+          "input"
+        ]
+      },
+      "TrialDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tagLabel": {
+            "type": "string"
+          },
+          "boxLabel": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "deviceModel": {
+            "type": "string"
+          },
+          "osVersion": {
+            "type": "string"
+          },
+          "provisioningId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatment": {
+            "type": "string",
+            "enum": [
+              "UID",
+              "NDEF_ESTATICO",
+              "SDM"
+            ]
+          },
+          "policy": {
+            "type": "string",
+            "enum": [
+              "ESTRITA",
+              "REGISTRO_TARDIO"
+            ],
+            "nullable": true
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "LEGITIMO_ONLINE",
+              "LEGITIMO_OFFLINE",
+              "DUPLICACAO",
+              "CONCORRENCIA",
+              "RESPOSTA_PERDIDA",
+              "REORDENACAO",
+              "NDEF_COPIADO",
+              "UID_DIVERGENTE",
+              "BYTES_ALTERADOS",
+              "CONTEXTO_ALTERADO",
+              "SDM_REUTILIZADO",
+              "PRIMEIRA_APRESENTACAO_TARDIA",
+              "TRANSFERENCIA_ETIQUETA"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "LEITURA_FISICA",
+              "REEXECUCAO",
+              "SINTETICA"
+            ]
+          },
+          "ordinal": {
+            "type": "number"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "PROVISIONAMENTO",
+              "COLETA",
+              "RECEBIMENTO",
+              "MOVIMENTACAO",
+              "EXPEDICAO",
+              "ENTREGA"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "tagLabel",
+          "boxLabel",
+          "deviceId",
+          "deviceModel",
+          "osVersion",
+          "provisioningId",
+          "treatment",
+          "policy",
+          "scenario",
+          "mode",
+          "ordinal",
+          "eventType"
+        ]
+      },
+      "TrialsPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredTrial"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "TruthInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legitimate": {
+            "type": "boolean"
+          },
+          "shouldAuthorize": {
+            "type": "boolean"
+          },
+          "observedBox": {
+            "type": "string"
+          },
+          "observedTag": {
+            "type": "string"
+          },
+          "observedOrdinal": {
+            "type": "number",
+            "description": "Ordem conferida externamente; não inferida da API."
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Horário declarado pelo observador, usado como contexto e não para medir duração."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "OBSERVADOR",
+              "ROTEIRO_SINTETICO"
+            ]
+          },
+          "excluded": {
+            "type": "boolean"
+          },
+          "exclusionReason": {
+            "type": "string",
+            "enum": [
+              "NAO_EXCLUIDA",
+              "CONFIGURACAO_DIVERGENTE",
+              "PROCEDIMENTO_INTERROMPIDO",
+              "HARDWARE_INCOMPATIVEL"
+            ]
+          },
+          "trialId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "legitimate",
+          "shouldAuthorize",
+          "observedBox",
+          "observedTag",
+          "observedOrdinal",
+          "observedAt",
+          "source",
+          "excluded",
+          "exclusionReason",
+          "trialId"
+        ]
+      },
+      "StoredTruth": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "input": {
+            "$ref": "#/components/schemas/TruthInput"
+          },
+          "revision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "recordedAt",
+          "input",
+          "revision"
+        ]
+      },
+      "TruthDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legitimate": {
+            "type": "boolean"
+          },
+          "shouldAuthorize": {
+            "type": "boolean"
+          },
+          "observedBox": {
+            "type": "string"
+          },
+          "observedTag": {
+            "type": "string"
+          },
+          "observedOrdinal": {
+            "type": "number",
+            "description": "Ordem conferida externamente; não inferida da API."
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Horário declarado pelo observador, usado como contexto e não para medir duração."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "OBSERVADOR",
+              "ROTEIRO_SINTETICO"
+            ]
+          },
+          "excluded": {
+            "type": "boolean"
+          },
+          "exclusionReason": {
+            "type": "string",
+            "enum": [
+              "NAO_EXCLUIDA",
+              "CONFIGURACAO_DIVERGENTE",
+              "PROCEDIMENTO_INTERROMPIDO",
+              "HARDWARE_INCOMPATIVEL"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "legitimate",
+          "shouldAuthorize",
+          "observedBox",
+          "observedTag",
+          "observedOrdinal",
+          "observedAt",
+          "source",
+          "excluded",
+          "exclusionReason"
+        ]
+      },
+      "ClientRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "trialId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "TENTATIVA_INICIADA",
+              "LEITURA_OK",
+              "LEITURA_FALHOU",
+              "LEITURA_INTERROMPIDA",
+              "CAPTURA_LOCAL",
+              "CONFIRMACAO_LOCAL",
+              "CONFIRMACAO_FINAL",
+              "ENVIO_INICIADO",
+              "ENVIO_CONFIRMADO",
+              "ENVIO_FALHOU",
+              "COMUNICACAO_LIBERADA",
+              "DECISAO_CONSULTADA",
+              "RECONCILIACAO_CONCLUIDA"
+            ]
+          },
+          "observationId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clockId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "monotonicMs": {
+            "type": "number",
+            "description": "Milissegundos monotônicos; origem clockId."
+          },
+          "durationMs": {
+            "type": "object",
+            "nullable": true
+          },
+          "boundary": {
+            "type": "string",
+            "enum": [
+              "INSTANTE",
+              "SESSAO_NFC_ATE_EVIDENCIA",
+              "ENVIO_ATE_RESPOSTA",
+              "LIBERACAO_ATE_DECISAO_FINAL",
+              "INICIO_ATE_CONFIRMACAO_LOCAL",
+              "INICIO_ATE_DECISAO_FINAL"
+            ]
+          },
+          "code": {
+            "type": "object",
+            "nullable": true,
+            "description": "Código técnico estável, sem texto livre ou credenciais."
+          }
+        },
+        "required": [
+          "id",
+          "trialId",
+          "attemptId",
+          "stage",
+          "observationId",
+          "deviceId",
+          "occurredAt",
+          "clockId",
+          "monotonicMs",
+          "durationMs",
+          "boundary",
+          "code"
+        ]
+      },
+      "StoredClientRecord": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ClientRecordDto"
+          }
+        },
+        "required": [
+          "userId",
+          "recordedAt",
+          "input"
+        ]
+      },
+      "ExperimentalDataset": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "run": {
+            "$ref": "#/components/schemas/StoredRun"
+          },
+          "trials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredTrial"
+            }
+          },
+          "groundTruth": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredTruth"
+            }
+          },
+          "clientRecords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredClientRecord"
+            }
+          },
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Snapshot normalizado, recibo original, todas as revisões e movimentos; dicionário em docs/experimentation.md."
+          },
+          "serverMeasurements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "observationId,revision,boundary,clockId,startMs,endMs; unidade ms, mesma origem."
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "run",
+          "trials",
+          "groundTruth",
+          "clientRecords",
+          "observations",
+          "serverMeasurements"
+        ]
+      },
+      "IntegrityResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "COMPLETO",
+              "INCOMPLETO",
+              "INCONSISTENTE"
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "errors",
+          "warnings"
+        ]
+      },
+      "ExperimentExport": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "checksum": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "SHA-256 do dataset com chaves de objetos em ordem lexicográfica; arrays preservados."
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/ExperimentalDataset"
+          },
+          "integrity": {
+            "$ref": "#/components/schemas/IntegrityResponse"
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Contagens/durações por tentativa planejada, separando mode/dataKind; definições no dicionário."
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Razões com numerador/denominador explícitos; null sem população elegível. Separadas por dataKind/mode/tratamento/política, com clusters e durações em ms."
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "checksum",
+          "dataset",
+          "integrity",
+          "summary",
+          "metrics"
         ]
       }
     }

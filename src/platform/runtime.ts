@@ -1,4 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
+import { MonotonicClock } from '../shared-kernel/measurement';
+
+export class NodeMonotonicClock implements MonotonicClock {
+  readonly originId = randomUUID();
+  nowMs() {
+    return performance.now();
+  }
+}
 import {
   Clock,
   Fingerprint,

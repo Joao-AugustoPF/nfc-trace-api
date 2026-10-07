@@ -20,7 +20,11 @@ import { AuditConsumer } from '../platform/audit/audit-consumer';
 import { OutboxDispatcher } from '../platform/messaging/outbox-dispatcher';
 import { OutboxWorker } from '../platform/messaging/outbox-worker';
 import { HealthController } from '../platform/observability/health.controller';
-import { NodeIds, Sha256Fingerprint, SystemClock } from '../platform/runtime';
+import { NodeIds, NodeMonotonicClock, Sha256Fingerprint, SystemClock } from '../platform/runtime';
+import { ExperimentService } from '../bounded-contexts/experimentation/application/experiment-service';
+import { PostgresExperimentStore } from '../bounded-contexts/experimentation/infrastructure/postgres-experiment-store';
+import { ExperimentsController } from '../bounded-contexts/experimentation/presentation/http/controller';
+import { experimentAuthorization } from '../platform/access/experiment-authorization';
 import { AppConfig } from './config';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { PostgresIdentityStore } from '../bounded-contexts/identity/infrastructure/postgres-identity-store';
@@ -53,6 +57,7 @@ export class AppModule {
   static register(config: AppConfig, source: DataSource, ownsSource = true): DynamicModule {
     const uow = new TypeOrmUnitOfWork(source, captureAuthorization);
     const clock = new SystemClock();
+    const timing = new NodeMonotonicClock();
     const ids = new NodeIds();
     const sdm = new NodeSdmCryptography(config.sdmMasterVersion, config.sdmMasterKeysJson);
     const identity = new PostgresIdentityStore(source);
@@ -61,7 +66,10 @@ export class AppModule {
     const authenticate = new Authenticate(identity, tokens);
     const dispatcher = new OutboxDispatcher(
       source,
-      [new AuditConsumer(), new ReconciliationConsumer(new ReconcileObservations(clock, ids))],
+      [
+        new AuditConsumer(),
+        new ReconciliationConsumer(new ReconcileObservations(clock, ids, timing)),
+      ],
       {
         batchSize: config.batchSize,
         leaseMs: config.leaseMs,
@@ -80,8 +88,17 @@ export class AppModule {
               HealthController,
               AuthenticationController,
               UsersController,
+              ExperimentsController,
             ],
       providers: [
+        {
+          provide: ExperimentService,
+          useFactory: () =>
+            new ExperimentService(
+              new PostgresExperimentStore(source, experimentAuthorization),
+              new Sha256Fingerprint(),
+            ),
+        },
         {
           provide: SignIn,
           useFactory: () =>
@@ -105,7 +122,8 @@ export class AppModule {
         { provide: CloseProvisioning, useFactory: () => new CloseProvisioning(uow, clock, ids) },
         {
           provide: RecordObservation,
-          useFactory: () => new RecordObservation(uow, clock, ids, new Sha256Fingerprint(), sdm),
+          useFactory: () =>
+            new RecordObservation(uow, clock, ids, new Sha256Fingerprint(), sdm, timing),
         },
         {
           provide: TraceabilityQueries,
