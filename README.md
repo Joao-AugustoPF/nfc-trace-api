@@ -28,8 +28,8 @@ Preparação da entrega #9: [reprodução, versões, APK candidato e backup/rest
 `npm run lab:reproduce` verifica uma instalação Docker isolada; não usa o banco da
 bancada. `/health/version` identifica o build compilado sem divulgar configuração privada.
 
-Administração #12 em desenvolvimento: [motor EV2 e próximos passos](docs/ntag-administration.md).
-O protocolo de servidor está testado; integração administrativa API/mobile e
+Administração #12 em desenvolvimento: [EV2, cofre privado, inspeção/API e próximos passos](docs/ntag-administration.md).
+O servidor já permite inspeção autenticada com diário durável; transporte mobile,
 personalização/aceite NTAG ainda estão pendentes.
 
 ## Iniciar com Docker

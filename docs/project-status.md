@@ -34,7 +34,7 @@ validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Motor EV2 disponível; faltam cofre/diário/API/tela administrativos, personalização, proteção/recuperação, perfil definitivo e aceite NTAG | Hardware real e integração de código/procedimento restantes |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Motor EV2, cofre/inventário de cinco slots e inspeção administrativa com diário/API disponíveis; faltam tela/transporte mobile, material alvo, plano de gravação/recuperação parcial, perfil definitivo e aceite NTAG | Integração de código/procedimento restantes e hardware real |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
@@ -156,7 +156,7 @@ compartilhado com o verificador SDM. Vetores NXP de autenticação/derivação/I
 ChangeKey conferidos; 20 testes novos, 146 API/14 suítes com PostgreSQL/Supertest,
 lint/8 fronteiras, tipos, formatter, build e OpenAPI sem alteração de contrato.
 
-Esta etapa é o motor de protocolo, ainda sem endpoint/tela/diário/cofre dos cinco
+O primeiro incremento foi o motor de protocolo, ainda sem endpoint/tela/diário/cofre dos cinco
 slots administrativos. Não personaliza a tag pelo aplicativo. Continuar na mesma
 #12 com inventário privado, operação durável, API administrativa e transporte NFC
 real no mobile; depois executar proteção/recuperação e o aceite físico. Nenhum
@@ -166,3 +166,27 @@ nenhum EAS, Actions ou merge iniciado.
 Motor publicado em [API #20](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/20),
 draft sobre [#19](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/19), implementação
 `e07450e`. O PR será ampliado na mesma branch conforme a integração #12 avançar.
+
+## Inventário e inspeção administrativa da #12
+
+No mesmo PR #20/branch: contexto `tag-administration`, cofre AES-GCM dos cinco slots,
+importação CLI privada/auditada, plano imutável por vínculo/UID/época, inspeção EV2
+autenticando todas as chaves e consultando versões/configurações. API ADMINISTRADOR
+com lease/sessão RF, recuperação explícita, diário paginado e checkpoint idempotente.
+Sexta migration; seis tabelas novas. Intenção precede emissão, resposta/recibo/comando
+seguinte/outbox são atômicos; rollback/reinício descarta canal. Conta/sessão são
+revalidadas no banco. Mestras permanecem externas e wrappers anteriores preservados.
+
+Inspeção não grava nem instala chaves; resultado explicita `personalizada:false` e
+vínculo permanece REGISTRADA. Somente Feiju disponível, sem teste físico ou alteração
+mobile. Próximo incremento: material alvo/plano protegido, recuperação de escrita
+parcial e tela/transporte NFC no Nova-tag. Checkboxes de personalização/aceite da #12
+continuam abertos, assim como #8/#9. Ver [contrato/procedimento](ntag-administration.md).
+
+Validação local: **165 testes/16 suítes**, PostgreSQL real/Supertest; 16 integrações
+novas de inventário/inspeção e três testes de cofre/parser. Incluem CLI real com ACL
+Windows (remoção de permissão explícita de terceiros), cinco slots/UID/versões,
+reenvio/concorrência, reinício/lease, cancelamento após novo login, revogação,
+vínculo encerrado, imutabilidade e rollback de intenção/resposta/canal. Lint/oito
+fronteiras, tipos, formatter, build e OpenAPI passaram. Endpoints administrativos
+de inspeção documentados; não há endpoint de APDU arbitrária ou chave bruta.

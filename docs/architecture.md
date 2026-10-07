@@ -173,3 +173,26 @@ Exportação usa `REPEATABLE READ`/`READ ONLY`, whitelist de fatos operacionais 
 checksum canônico. Identidade autenticada, alegações do cliente e conferência
 externa não são tratadas como a mesma evidência. `dataKind`/`mode` separam coleta
 física, reexecuções e fixtures. [Dicionário e reprodução](experimentation.md).
+
+## ADR 010 — Administração NFC, inventário e sessão física
+
+`tag-administration` separa a preparação administrativa das capturas operacionais.
+Domínio encapsula estados/recuperação; aplicação depende de portas específicas de
+cofre, gateway EV2, transação, relógio, IDs e fingerprint. A composição injeta Node,
+PostgreSQL e Nest. O ACL SQL lê/bloqueia o pedido/vínculo de rastreabilidade sem
+importar suas entidades; conta e sessão são conferidas/bloqueadas na transação.
+
+Inventário declarado por CLI local cifra os cinco slots sob mestra externa, com
+AAD de propósito/referência/UID/versões. Referências/planos e diário são imutáveis;
+uma operação aberta por UID impede concorrência/substituição de material em uso.
+Inspeção autentica as cinco chaves e confirma UID/versões/configuração, mas não
+personaliza nem ativa. Chaves de sessão permanecem em memória; banco conserva
+checkpoints/intenção e recibos, sem tentar reconstruir uma sessão RF após reinício.
+
+Intenção/identidade do comando precedem a resposta HTTP. Resposta, recibo, comando
+seguinte e outbox têm commit conjunto. Rollback que avance EV2 descarta o canal;
+outro RF/recuperação explícita são exigidos. Repetição HTTP devolve checkpoint atual
+sem retransmitir NFC nem oferecer APDU antiga. Sessão fixa por conta/sessão/estação/RF
+tem lease de três minutos; o diário é consultável antes do consumidor de auditoria.
+Plano de mutações/material alvo, escrita parcial e transporte/tela mobile seguem
+na #12. [Contrato, CLI e limites](ntag-administration.md).

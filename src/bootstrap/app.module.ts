@@ -41,6 +41,22 @@ import { NodeSdmCryptography } from '../bounded-contexts/traceability/infrastruc
 import { captureAuthorization } from '../platform/access/capture-authorization';
 import { ReconciliationConsumer } from '../platform/messaging/reconciliation-consumer';
 import { ReconcileObservations } from '../bounded-contexts/traceability/application/reconcile-observations';
+import { NfcAdministration } from '../bounded-contexts/tag-administration/application/administration-service';
+import { NodeCredentialVault } from '../bounded-contexts/tag-administration/infrastructure/credential-vault';
+import { Ev2InspectionGateway } from '../bounded-contexts/tag-administration/infrastructure/ev2-inspection-gateway';
+import { PostgresAdministrationStore } from '../bounded-contexts/tag-administration/infrastructure/postgres-administration-store';
+import { NfcAdministrationController } from '../bounded-contexts/tag-administration/presentation/http/controller';
+
+class NfcAdministrationLifecycle implements OnApplicationShutdown {
+  constructor(
+    private readonly gateway: Ev2InspectionGateway,
+    private readonly vault: NodeCredentialVault,
+  ) {}
+  onApplicationShutdown(): void {
+    this.gateway.closeAll();
+    this.vault.close();
+  }
+}
 
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(
@@ -60,6 +76,8 @@ export class AppModule {
     const timing = new NodeMonotonicClock();
     const ids = new NodeIds();
     const sdm = new NodeSdmCryptography(config.sdmMasterVersion, config.sdmMasterKeysJson);
+    const nfcVault = new NodeCredentialVault(config.sdmMasterVersion, config.sdmMasterKeysJson);
+    const nfcGateway = new Ev2InspectionGateway(nfcVault);
     const identity = new PostgresIdentityStore(source);
     const passwords = new ScryptPasswords();
     const tokens = new OpaqueTokens();
@@ -89,8 +107,24 @@ export class AppModule {
               AuthenticationController,
               UsersController,
               ExperimentsController,
+              NfcAdministrationController,
             ],
       providers: [
+        {
+          provide: NfcAdministration,
+          useFactory: () =>
+            new NfcAdministration(
+              new PostgresAdministrationStore(source),
+              nfcGateway,
+              clock,
+              ids,
+              new Sha256Fingerprint(),
+            ),
+        },
+        {
+          provide: NfcAdministrationLifecycle,
+          useFactory: () => new NfcAdministrationLifecycle(nfcGateway, nfcVault),
+        },
         {
           provide: ExperimentService,
           useFactory: () =>

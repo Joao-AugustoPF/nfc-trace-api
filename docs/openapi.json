@@ -3815,6 +3815,1113 @@
           "Experimentos"
         ]
       }
+    },
+    "/api/v1/administracao-nfc/inspecoes": {
+      "post": {
+        "operationId": "NfcAdministrationController_prepare",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareInspectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/InspectionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preparar plano de inspeção EV2 de vínculo pendente; exige inventário privado local.",
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}": {
+      "get": {
+        "operationId": "NfcAdministrationController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/InspectionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}/diario": {
+      "get": {
+        "operationId": "NfcAdministrationController_journal",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "type": "object",
+                      "required": [
+                        "itens",
+                        "total",
+                        "pagina",
+                        "limite"
+                      ],
+                      "properties": {
+                        "itens": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/JournalResponse"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "pagina": {
+                          "type": "integer"
+                        },
+                        "limite": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}/sessoes": {
+      "post": {
+        "operationId": "NfcAdministrationController_begin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RfSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/SessionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Abrir sessão RF isolada; comandos não alteram a tag. Recuperação exige UUID RF novo.",
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}/sessoes/{sessaoId}/respostas": {
+      "post": {
+        "operationId": "NfcAdministrationController_respond",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessaoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RfResponseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/SessionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar resposta e obter checkpoint atual; falha EV2 armazenada retorna status INTERROMPIDA.",
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}/encerramento": {
+      "post": {
+        "operationId": "NfcAdministrationController_end",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/InspectionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Administração NFC"
+        ]
+      }
+    },
+    "/api/v1/administracao-nfc/inspecoes/{id}/sessoes/{sessaoId}/interrupcao": {
+      "post": {
+        "operationId": "NfcAdministrationController_interrupt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessaoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterruptRfDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sucesso",
+                    "mensagem",
+                    "dados"
+                  ],
+                  "properties": {
+                    "sucesso": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "dados": {
+                      "$ref": "#/components/schemas/SessionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Interromper RF e conservar plano para recuperação, inclusive após novo login da conta criadora.",
+        "tags": [
+          "Administração NFC"
+        ]
+      }
     }
   },
   "info": {
@@ -4789,17 +5896,51 @@
       "SessionResponse": {
         "type": "object",
         "properties": {
-          "usuario": {
-            "$ref": "#/components/schemas/UserResponse"
+          "sessaoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "EM_ANDAMENTO",
+              "CONCLUIDA",
+              "INTERROMPIDA"
+            ]
           },
           "expiraEm": {
+            "type": "string"
+          },
+          "comando": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommandResponse"
+              }
+            ]
+          },
+          "resultado": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResultResponse"
+              }
+            ]
+          },
+          "codigo": {
             "type": "string",
-            "format": "date-time"
+            "nullable": true
           }
         },
         "required": [
-          "usuario",
-          "expiraEm"
+          "sessaoId",
+          "status",
+          "expiraEm",
+          "comando",
+          "resultado",
+          "codigo"
         ]
       },
       "LogoutResponse": {
@@ -5623,6 +6764,307 @@
           "integrity",
           "summary",
           "metrics"
+        ]
+      },
+      "InspectionPlanResponse": {
+        "type": "object",
+        "properties": {
+          "versao": {
+            "type": "number",
+            "example": 1
+          },
+          "finalidade": {
+            "type": "string",
+            "enum": [
+              "INSPECAO_EV2"
+            ]
+          },
+          "provisionamentoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uid": {
+            "type": "string"
+          },
+          "epoca": {
+            "type": "number"
+          },
+          "estrategia": {
+            "type": "string"
+          },
+          "referenciaCredenciais": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versoesChaves": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "versao",
+          "finalidade",
+          "provisionamentoId",
+          "uid",
+          "epoca",
+          "estrategia",
+          "referenciaCredenciais",
+          "versoesChaves"
+        ]
+      },
+      "InspectionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plano": {
+            "$ref": "#/components/schemas/InspectionPlanResponse"
+          },
+          "hashPlano": {
+            "type": "string"
+          },
+          "administradorId": {
+            "type": "string"
+          },
+          "estacao": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PREPARADA",
+              "INSPECIONANDO",
+              "INSPECIONADA",
+              "INTERROMPIDA",
+              "ENCERRADA"
+            ]
+          },
+          "criadaEm": {
+            "type": "string"
+          },
+          "sessaoAtivaId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "plano",
+          "hashPlano",
+          "administradorId",
+          "estacao",
+          "status",
+          "criadaEm",
+          "sessaoAtivaId"
+        ]
+      },
+      "PrepareInspectionDto": {
+        "type": "object",
+        "properties": {
+          "estacao": {
+            "type": "string",
+            "description": "Identificador declarado da estação; fixo durante a operação.",
+            "maxLength": 128
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provisionamentoId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "estacao",
+          "id",
+          "provisionamentoId"
+        ]
+      },
+      "JournalResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "operacaoId": {
+            "type": "string"
+          },
+          "sessaoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "recebidoEm": {
+            "type": "string"
+          },
+          "detalhes": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "operacaoId",
+          "sessaoId",
+          "tipo",
+          "recebidoEm",
+          "detalhes"
+        ]
+      },
+      "CommandResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequencia": {
+            "type": "number"
+          },
+          "etapa": {
+            "type": "string"
+          },
+          "apduHex": {
+            "type": "string",
+            "description": "Transmitir no máximo uma vez nesta sessão RF. Repetição HTTP não autoriza reenvio NFC."
+          }
+        },
+        "required": [
+          "id",
+          "sequencia",
+          "etapa",
+          "apduHex"
+        ]
+      },
+      "ResultResponse": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "configuracaoNdefHex": {
+            "type": "string"
+          },
+          "versoesChaves": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "slotsAutenticados": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "personalizada": {
+            "type": "boolean",
+            "example": false,
+            "description": "Inspeção não instala chaves, não grava NDEF e não ativa vínculo."
+          }
+        },
+        "required": [
+          "uid",
+          "configuracaoNdefHex",
+          "versoesChaves",
+          "slotsAutenticados",
+          "personalizada"
+        ]
+      },
+      "RfSessionDto": {
+        "type": "object",
+        "properties": {
+          "estacao": {
+            "type": "string",
+            "description": "Identificador declarado da estação; fixo durante a operação.",
+            "maxLength": 128
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessaoRfId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID novo a cada abertura física da sessão NFC."
+          },
+          "recuperar": {
+            "type": "boolean",
+            "description": "Confirma recuperação explícita após interrupção; não reenvia APDUs anteriores."
+          }
+        },
+        "required": [
+          "estacao",
+          "id",
+          "sessaoRfId",
+          "recuperar"
+        ]
+      },
+      "RfResponseDto": {
+        "type": "object",
+        "properties": {
+          "estacao": {
+            "type": "string",
+            "description": "Identificador declarado da estação; fixo durante a operação.",
+            "maxLength": 128
+          },
+          "comandoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessaoRfId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "respostaHex": {
+            "type": "string",
+            "description": "APDU completa, incluindo SW1/SW2 no final; sem espaços.",
+            "maxLength": 516
+          }
+        },
+        "required": [
+          "estacao",
+          "comandoId",
+          "sessaoRfId",
+          "respostaHex"
+        ]
+      },
+      "StationDto": {
+        "type": "object",
+        "properties": {
+          "estacao": {
+            "type": "string",
+            "description": "Identificador declarado da estação; fixo durante a operação.",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "estacao"
+        ]
+      },
+      "InterruptRfDto": {
+        "type": "object",
+        "properties": {
+          "estacao": {
+            "type": "string",
+            "description": "Identificador declarado da estação; fixo durante a operação.",
+            "maxLength": 128
+          },
+          "sessaoRfId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "estacao",
+          "sessaoRfId"
         ]
       }
     }
