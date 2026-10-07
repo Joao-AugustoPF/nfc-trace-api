@@ -54,7 +54,17 @@ export class OrderDetailsResponse extends OrderResponse {
   })
   provisionamentoVigente!: ProvisioningResponse | null;
 }
+export class DependencyResponse {
+  @ApiProperty({ enum: ['COLETA', 'RECEBIMENTO'] }) tipo!: string;
+  @ApiProperty({ enum: ['COLETADO', 'RECEBIDO'] }) estadoNecessario!: string;
+}
 export class DecisionResponse {
+  @ApiProperty({ minimum: 1 }) revisao!: number;
+  @ApiProperty({ enum: ['AUTORIZADA', 'PENDENTE', 'REJEITADA', 'TARDIA'] }) status!: string;
+  @ApiProperty({ format: 'date-time' }) avaliadaEm!: string;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true }) causaId!: string | null;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true }) expiraEm!: string | null;
+  @ApiProperty({ type: [DependencyResponse] }) dependencias!: DependencyResponse[];
   @ApiPropertyOptional({ type: SdmDecisionResponse }) sdm?: SdmDecisionResponse;
   @ApiProperty() autorizada!: boolean;
   @ApiProperty() motivo!: string;
@@ -72,6 +82,11 @@ export class AuthorshipResponse {
   @ApiProperty({ type: String, nullable: true }) perfil!: string | null;
 }
 export class ObservationResponse extends ObservationDto {
+  @ApiProperty({
+    type: [DecisionResponse],
+    description: 'POST retorna o recibo original; GET retorna a projeção e todas as revisões.',
+  })
+  historicoDecisoes!: DecisionResponse[];
   @ApiProperty({ type: AuthorshipResponse }) autoria!: AuthorshipResponse;
   @ApiProperty({ example: true }) armazenada!: boolean;
   @ApiProperty({ type: String, format: 'uuid', nullable: true }) pedidoId!: string | null;
@@ -80,6 +95,7 @@ export class ObservationResponse extends ObservationDto {
   @ApiProperty({ type: DecisionResponse }) decisao!: DecisionResponse;
 }
 export class HistoryResponse {
+  @ApiProperty({ type: [DecisionResponse] }) historicoDecisoes!: DecisionResponse[];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() tipo!: string;
   @ApiProperty({ format: 'date-time' }) ocorridoEm!: string;

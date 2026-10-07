@@ -1,6 +1,6 @@
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { DomainError } from '../../../shared-kernel/domain-error';
-import { Transaction, UnitOfWork } from '../application/ports';
+import { CaptureAuthorization, Transaction, UnitOfWork } from '../application/ports';
 import {
   OrderRecord,
   TagRecord,
@@ -11,10 +11,30 @@ import {
 } from './records';
 import { toOrder, toTag, toProvisioning, toObservation } from './mappers';
 import { SealedSdmKeys } from '../application/sdm-ports';
+import { decisionRepository } from './decision-store';
 
-export function createTransaction(manager: EntityManager): Transaction {
+export type AuthorizationFactory = (manager: EntityManager) => CaptureAuthorization;
+const denyAuthorization: AuthorizationFactory = () => ({
+  async check() {
+    return { allowed: false, reason: 'IDENTIDADE_NAO_VERIFICADA', expiresAt: null };
+  },
+});
+
+export function createTransaction(
+  manager: EntityManager,
+  authorization: AuthorizationFactory = denyAuthorization,
+): Transaction {
   return {
+    authorization: authorization(manager),
+    decisions: decisionRepository(manager),
     sdm: {
+      async owns(id, counter, observationId) {
+        const rows: unknown[] = await manager.query(
+          'SELECT 1 FROM sdm_evidence WHERE provisioning_id=$1 AND counter=$2 AND observation_id=$3',
+          [id, counter, observationId],
+        );
+        return rows.length === 1;
+      },
       async insertKeys(id, _configuration, keys) {
         await manager.query('INSERT INTO sdm_keys (provisioning_id,sealed) VALUES ($1,$2)', [
           id,
@@ -153,6 +173,7 @@ export function createTransaction(manager: EntityManager): Transaction {
           receivedAt: new Date(o.receivedAt),
         });
         await manager.insert(DecisionRow, { observationId: o.input.id, result: o.decision });
+        await decisionRepository(manager).append(o.input.id, o.decision);
       },
     },
     movements: {
@@ -165,13 +186,12 @@ export function createTransaction(manager: EntityManager): Transaction {
       },
     },
     outbox: {
-      async append(events) {
+      async append(events, availableAt) {
         for (const event of events) {
-          await manager.query('INSERT INTO outbox (id, envelope, created_at) VALUES ($1, $2, $3)', [
-            event.id,
-            event,
-            event.occurredAt,
-          ]);
+          await manager.query(
+            'INSERT INTO outbox (id, envelope, created_at, available_at) VALUES ($1, $2, $3, $4)',
+            [event.id, event, event.occurredAt, availableAt ?? event.occurredAt],
+          );
         }
       },
     },
@@ -179,11 +199,14 @@ export function createTransaction(manager: EntityManager): Transaction {
 }
 
 export class TypeOrmUnitOfWork implements UnitOfWork {
-  constructor(private readonly source: DataSource) {}
+  constructor(
+    private readonly source: DataSource,
+    private readonly authorization: AuthorizationFactory = denyAuthorization,
+  ) {}
   async run<T>(work: (tx: Transaction) => Promise<T>): Promise<T> {
     try {
       return await this.source.transaction('READ COMMITTED', (manager) =>
-        work(createTransaction(manager)),
+        work(createTransaction(manager, this.authorization)),
       );
     } catch (error) {
       if (error instanceof QueryFailedError) {

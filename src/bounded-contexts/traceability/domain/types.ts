@@ -37,6 +37,12 @@ export interface ObservationInput {
 }
 
 export interface Decision {
+  status?: 'AUTORIZADA' | 'PENDENTE' | 'REJEITADA' | 'TARDIA';
+  revision?: number;
+  evaluatedAt?: string;
+  causeId?: string | null;
+  expiresAt?: string | null;
+  dependencies?: { event: EventType; state: OrderState }[];
   sdm?: SdmDecision;
   accepted: boolean;
   reason: string;
@@ -49,6 +55,7 @@ export interface Decision {
 }
 
 export interface ObservationRecord {
+  revisions?: Decision[];
   authenticatedActor?: AuthenticatedActor | null;
   input: ObservationInput;
   fingerprint: string;

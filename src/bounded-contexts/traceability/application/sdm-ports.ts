@@ -18,6 +18,7 @@ export interface SdmCryptography {
   ): { valid: boolean; counter: number | null };
 }
 export interface SdmRepository {
+  owns(provisioningId: string, counter: number, observationId: string): Promise<boolean>;
   insertKeys(id: string, configuration: SdmConfiguration, keys: SealedSdmKeys): Promise<void>;
   keys(id: string): Promise<SealedSdmKeys>;
   reserve(
