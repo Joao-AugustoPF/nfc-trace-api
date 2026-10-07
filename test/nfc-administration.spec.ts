@@ -18,6 +18,7 @@ import { NodeIds, Sha256Fingerprint, SystemClock } from '../src/platform/runtime
 import { resetDatabase, seedIdentity, testDatabase } from './support';
 import { SyntheticInspectionPicc } from './nfc-picc-fixture';
 import { privateOutput } from '../src/platform/access/sdm-keys-cli';
+import { createOpenApiDocument } from '../src/bootstrap/openapi';
 
 describe('Administrative NFC inventory/journal over PostgreSQL and HTTP (synthetic PICC)', () => {
   let source: DataSource, app: INestApplication, user: Awaited<ReturnType<typeof seedIdentity>>;
@@ -94,6 +95,25 @@ describe('Administrative NFC inventory/journal over PostgreSQL and HTTP (synthet
       estacao: station,
       respostaHex: hex,
     });
+  it('keeps login and NFC session schemas separate in the public OpenAPI contract', () => {
+    const document = createOpenApiDocument(app);
+    expect(document.components?.schemas?.SessionResponse).toHaveProperty('properties.usuario');
+    expect(document.components?.schemas?.SessionResponse).not.toHaveProperty('properties.comando');
+    expect(document.components?.schemas?.NfcInspectionSessionResponse).toHaveProperty(
+      'properties.comando',
+    );
+    expect(document.components?.schemas?.NfcInspectionSessionResponse).not.toHaveProperty(
+      'properties.usuario',
+    );
+    const auth = JSON.stringify(document.paths['/api/v1/autenticacao/sessao']?.get?.responses);
+    const inspection = JSON.stringify(
+      document.paths[
+        root.replace('/administracao-nfc', '/api/v1/administracao-nfc') + '/{id}/sessoes'
+      ]?.post?.responses,
+    );
+    expect(auth).toContain('#/components/schemas/SessionResponse');
+    expect(inspection).toContain('#/components/schemas/NfcInspectionSessionResponse');
+  });
   it('requires administrator, private inventory, supported model, pending binding and strict input', async () => {
     const operator = await seedIdentity(source, 'OPERADOR');
     await post(root, operator.token)

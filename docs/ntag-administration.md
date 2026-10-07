@@ -192,10 +192,11 @@ Chave de transporte conhecida/publicamente disponível não prova originalidade.
 ## Evidência desta etapa
 
 Motor: 20 testes EV2 com vetores NXP e casos adversariais/sintéticos. Inventário/API:
-3 testes de cofre/parser e 16 integrações com PostgreSQL real/Supertest/PICC sintética,
+3 testes de cofre/parser e 17 testes de integração com PostgreSQL real/Supertest/PICC sintética,
 incluindo importação CLI real/ACL Windows, cinco slots, UID/chave/versão errados,
 concorrência/idempotência, lease/reinício, autorização/revogação, vínculo encerrado,
-append-only e rollback da intenção **e** da resposta/canal. A suíte completa e
+append-only, rollback da intenção **e** da resposta/canal e separação dos schemas
+OpenAPI de login/inspeção. A suíte completa e
 verificações finais estão registradas no [mapa de entregas](project-status.md).
 
 Não houve personalização, leitura NFC física, tela mobile nova, firmware, EAS,

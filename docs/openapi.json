@@ -3851,7 +3851,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/InspectionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionResponse"
                     }
                   }
                 }
@@ -3994,7 +3994,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/InspectionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionResponse"
                     }
                   }
                 }
@@ -4176,7 +4176,7 @@
                         "itens": {
                           "type": "array",
                           "items": {
-                            "$ref": "#/components/schemas/JournalResponse"
+                            "$ref": "#/components/schemas/NfcAdministrationJournalResponse"
                           }
                         },
                         "total": {
@@ -4340,7 +4340,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/SessionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionSessionResponse"
                     }
                   }
                 }
@@ -4501,7 +4501,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/SessionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionSessionResponse"
                     }
                   }
                 }
@@ -4654,7 +4654,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/InspectionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionResponse"
                     }
                   }
                 }
@@ -4814,7 +4814,7 @@
                       "type": "string"
                     },
                     "dados": {
-                      "$ref": "#/components/schemas/SessionResponse"
+                      "$ref": "#/components/schemas/NfcInspectionSessionResponse"
                     }
                   }
                 }
@@ -5896,51 +5896,17 @@
       "SessionResponse": {
         "type": "object",
         "properties": {
-          "sessaoId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "EM_ANDAMENTO",
-              "CONCLUIDA",
-              "INTERROMPIDA"
-            ]
+          "usuario": {
+            "$ref": "#/components/schemas/UserResponse"
           },
           "expiraEm": {
-            "type": "string"
-          },
-          "comando": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CommandResponse"
-              }
-            ]
-          },
-          "resultado": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ResultResponse"
-              }
-            ]
-          },
-          "codigo": {
             "type": "string",
-            "nullable": true
+            "format": "date-time"
           }
         },
         "required": [
-          "sessaoId",
-          "status",
-          "expiraEm",
-          "comando",
-          "resultado",
-          "codigo"
+          "usuario",
+          "expiraEm"
         ]
       },
       "LogoutResponse": {
@@ -6766,7 +6732,7 @@
           "metrics"
         ]
       },
-      "InspectionPlanResponse": {
+      "NfcInspectionPlanResponse": {
         "type": "object",
         "properties": {
           "versao": {
@@ -6814,7 +6780,7 @@
           "versoesChaves"
         ]
       },
-      "InspectionResponse": {
+      "NfcInspectionResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -6822,7 +6788,7 @@
             "format": "uuid"
           },
           "plano": {
-            "$ref": "#/components/schemas/InspectionPlanResponse"
+            "$ref": "#/components/schemas/NfcInspectionPlanResponse"
           },
           "hashPlano": {
             "type": "string"
@@ -6885,7 +6851,7 @@
           "provisionamentoId"
         ]
       },
-      "JournalResponse": {
+      "NfcAdministrationJournalResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -6918,7 +6884,7 @@
           "detalhes"
         ]
       },
-      "CommandResponse": {
+      "NfcInspectionCommandResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -6943,7 +6909,7 @@
           "apduHex"
         ]
       },
-      "ResultResponse": {
+      "NfcInspectionResultResponse": {
         "type": "object",
         "properties": {
           "uid": {
@@ -6976,6 +6942,56 @@
           "versoesChaves",
           "slotsAutenticados",
           "personalizada"
+        ]
+      },
+      "NfcInspectionSessionResponse": {
+        "type": "object",
+        "properties": {
+          "sessaoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "EM_ANDAMENTO",
+              "CONCLUIDA",
+              "INTERROMPIDA"
+            ]
+          },
+          "expiraEm": {
+            "type": "string"
+          },
+          "comando": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NfcInspectionCommandResponse"
+              }
+            ]
+          },
+          "resultado": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NfcInspectionResultResponse"
+              }
+            ]
+          },
+          "codigo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "sessaoId",
+          "status",
+          "expiraEm",
+          "comando",
+          "resultado",
+          "codigo"
         ]
       },
       "RfSessionDto": {

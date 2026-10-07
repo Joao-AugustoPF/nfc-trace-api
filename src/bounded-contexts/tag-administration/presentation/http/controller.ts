@@ -83,7 +83,7 @@ export class JournalQuery {
   @Max(100)
   limite = 25;
 }
-export class InspectionPlanResponse {
+export class NfcInspectionPlanResponse {
   @ApiProperty({ example: 1 }) versao!: number;
   @ApiProperty({ enum: ['INSPECAO_EV2'] }) finalidade!: string;
   @ApiProperty({ format: 'uuid' }) provisionamentoId!: string;
@@ -93,9 +93,9 @@ export class InspectionPlanResponse {
   @ApiProperty({ format: 'uuid' }) referenciaCredenciais!: string;
   @ApiProperty({ type: [Number] }) versoesChaves!: number[];
 }
-export class InspectionResponse {
+export class NfcInspectionResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ type: InspectionPlanResponse }) plano!: InspectionPlanResponse;
+  @ApiProperty({ type: NfcInspectionPlanResponse }) plano!: NfcInspectionPlanResponse;
   @ApiProperty() hashPlano!: string;
   @ApiProperty() administradorId!: string;
   @ApiProperty() estacao!: string;
@@ -106,7 +106,7 @@ export class InspectionResponse {
   @ApiProperty() criadaEm!: string;
   @ApiProperty({ type: String, nullable: true }) sessaoAtivaId!: string | null;
 }
-export class CommandResponse {
+export class NfcInspectionCommandResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() sequencia!: number;
   @ApiProperty() etapa!: string;
@@ -116,7 +116,7 @@ export class CommandResponse {
   })
   apduHex!: string;
 }
-export class ResultResponse {
+export class NfcInspectionResultResponse {
   @ApiProperty() uid!: string;
   @ApiProperty() configuracaoNdefHex!: string;
   @ApiProperty({ type: [Number] }) versoesChaves!: number[];
@@ -127,15 +127,17 @@ export class ResultResponse {
   })
   personalizada!: boolean;
 }
-export class SessionResponse {
+export class NfcInspectionSessionResponse {
   @ApiProperty({ format: 'uuid' }) sessaoId!: string;
   @ApiProperty({ enum: ['EM_ANDAMENTO', 'CONCLUIDA', 'INTERROMPIDA'] }) status!: string;
   @ApiProperty() expiraEm!: string;
-  @ApiProperty({ type: CommandResponse, nullable: true }) comando!: CommandResponse | null;
-  @ApiProperty({ type: ResultResponse, nullable: true }) resultado!: ResultResponse | null;
+  @ApiProperty({ type: NfcInspectionCommandResponse, nullable: true })
+  comando!: NfcInspectionCommandResponse | null;
+  @ApiProperty({ type: NfcInspectionResultResponse, nullable: true })
+  resultado!: NfcInspectionResultResponse | null;
   @ApiProperty({ type: String, nullable: true }) codigo!: string | null;
 }
-export class JournalResponse {
+export class NfcAdministrationJournalResponse {
   @ApiProperty() id!: string;
   @ApiProperty() operacaoId!: string;
   @ApiProperty({ type: String, nullable: true }) sessaoId!: string | null;
@@ -143,7 +145,7 @@ export class JournalResponse {
   @ApiProperty() recebidoEm!: string;
   @ApiProperty({ type: 'object', additionalProperties: true }) detalhes!: Record<string, unknown>;
 }
-const inspectionResponse = (s: InspectionSnapshot): InspectionResponse => ({
+const inspectionResponse = (s: InspectionSnapshot): NfcInspectionResponse => ({
   id: s.id,
   plano: {
     versao: s.plan.version,
@@ -162,7 +164,7 @@ const inspectionResponse = (s: InspectionSnapshot): InspectionResponse => ({
   criadaEm: s.createdAt,
   sessaoAtivaId: s.activeSession,
 });
-const sessionResponse = (s: SessionReply): SessionResponse => ({
+const sessionResponse = (s: SessionReply): NfcInspectionSessionResponse => ({
   sessaoId: s.sessionId,
   status: s.state,
   expiraEm: s.expiresAt,
@@ -193,7 +195,7 @@ const sessionResponse = (s: SessionReply): SessionResponse => ({
 export class NfcAdministrationController {
   constructor(private readonly service: NfcAdministration) {}
   @Post()
-  @ApiSuccess(InspectionResponse, 201)
+  @ApiSuccess(NfcInspectionResponse, 201)
   @ApiOperation({
     summary: 'Preparar plano de inspeção EV2 de vínculo pendente; exige inventário privado local.',
   })
@@ -206,7 +208,7 @@ export class NfcAdministrationController {
     );
   }
   @Get(':id')
-  @ApiSuccess(InspectionResponse)
+  @ApiSuccess(NfcInspectionResponse)
   async get(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Principal() a: AuthenticatedActor,
@@ -214,7 +216,7 @@ export class NfcAdministrationController {
     return inspectionResponse(await this.service.get(id, a));
   }
   @Get(':id/diario')
-  @ApiSuccess(JournalResponse, 200, true)
+  @ApiSuccess(NfcAdministrationJournalResponse, 200, true)
   async journal(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query() q: JournalQuery,
@@ -237,7 +239,7 @@ export class NfcAdministrationController {
   }
   @Post(':id/sessoes')
   @HttpCode(200)
-  @ApiSuccess(SessionResponse)
+  @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({
     summary: 'Abrir sessão RF isolada; comandos não alteram a tag. Recuperação exige UUID RF novo.',
   })
@@ -256,7 +258,7 @@ export class NfcAdministrationController {
   }
   @Post(':id/sessoes/:sessaoId/respostas')
   @HttpCode(200)
-  @ApiSuccess(SessionResponse)
+  @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({
     summary:
       'Registrar resposta e obter checkpoint atual; falha EV2 armazenada retorna status INTERROMPIDA.',
@@ -283,7 +285,7 @@ export class NfcAdministrationController {
   }
   @Post(':id/encerramento')
   @HttpCode(200)
-  @ApiSuccess(InspectionResponse)
+  @ApiSuccess(NfcInspectionResponse)
   async end(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() b: StationDto,
@@ -293,7 +295,7 @@ export class NfcAdministrationController {
   }
   @Post(':id/sessoes/:sessaoId/interrupcao')
   @HttpCode(200)
-  @ApiSuccess(SessionResponse)
+  @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({
     summary:
       'Interromper RF e conservar plano para recuperação, inclusive após novo login da conta criadora.',

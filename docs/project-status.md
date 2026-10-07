@@ -156,12 +156,10 @@ compartilhado com o verificador SDM. Vetores NXP de autenticação/derivação/I
 ChangeKey conferidos; 20 testes novos, 146 API/14 suítes com PostgreSQL/Supertest,
 lint/8 fronteiras, tipos, formatter, build e OpenAPI sem alteração de contrato.
 
-O primeiro incremento foi o motor de protocolo, ainda sem endpoint/tela/diário/cofre dos cinco
-slots administrativos. Não personaliza a tag pelo aplicativo. Continuar na mesma
-#12 com inventário privado, operação durável, API administrativa e transporte NFC
-real no mobile; depois executar proteção/recuperação e o aceite físico. Nenhum
-checkbox de personalização completa ou bancada foi concluído. Mobile não mudou;
-nenhum EAS, Actions ou merge iniciado.
+O primeiro incremento foi o motor de protocolo, ainda sem endpoint/tela/diário/cofre
+naquela ocasião. Inventário, diário e API de inspeção foram acrescentados no incremento
+abaixo; o trabalho restante atual está na tabela. Nenhum checkbox de personalização
+completa ou bancada foi concluído. Mobile não mudou; nenhum EAS, Actions ou merge iniciado.
 
 Motor publicado em [API #20](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/20),
 draft sobre [#19](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/19), implementação
@@ -183,10 +181,11 @@ mobile. Próximo incremento: material alvo/plano protegido, recuperação de esc
 parcial e tela/transporte NFC no Nova-tag. Checkboxes de personalização/aceite da #12
 continuam abertos, assim como #8/#9. Ver [contrato/procedimento](ntag-administration.md).
 
-Validação local: **165 testes/16 suítes**, PostgreSQL real/Supertest; 16 integrações
+Validação local: **166 testes/16 suítes**, PostgreSQL real/Supertest; 17 integrações
 novas de inventário/inspeção e três testes de cofre/parser. Incluem CLI real com ACL
 Windows (remoção de permissão explícita de terceiros), cinco slots/UID/versões,
 reenvio/concorrência, reinício/lease, cancelamento após novo login, revogação,
-vínculo encerrado, imutabilidade e rollback de intenção/resposta/canal. Lint/oito
+vínculo encerrado, imutabilidade, rollback de intenção/resposta/canal e schemas
+OpenAPI de autenticação/inspeção distintos. Lint/oito
 fronteiras, tipos, formatter, build e OpenAPI passaram. Endpoints administrativos
 de inspeção documentados; não há endpoint de APDU arbitrária ou chave bruta.
