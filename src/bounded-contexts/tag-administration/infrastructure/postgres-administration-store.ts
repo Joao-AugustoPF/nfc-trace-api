@@ -11,6 +11,7 @@ import {
   ProvisioningGate,
   ResponseRecord,
   SessionRecord,
+  SealedCredentials,
 } from '../application/ports';
 
 class PostgresAdministrationTransaction implements AdministrationTransaction {
@@ -44,21 +45,74 @@ class PostgresAdministrationTransaction implements AdministrationTransaction {
     );
   }
   async credential(uid: string): Promise<CredentialRecord | null> {
-    const rows: CredentialRecord[] = await this.manager.query(
-      `SELECT c.id,c.uid,c.versions,c.sealed,c.created_at AS "createdAt"
-      FROM nfc_inventory i JOIN nfc_credentials c ON c.id=i.credential_id WHERE i.uid=$1`,
+    const rows: { credential_id: string }[] = await this.manager.query(
+      'SELECT credential_id FROM nfc_inventory WHERE uid=$1',
       [uid],
+    );
+    return rows[0] ? this.credentialById(rows[0].credential_id) : null;
+  }
+  async credentialById(id: string): Promise<CredentialRecord | null> {
+    const rows: CredentialRecord[] = await this.manager.query(
+      `SELECT c.id,c.uid,c.versions,
+      COALESCE((SELECT w.sealed FROM nfc_credential_wrappers w WHERE w.credential_id=c.id ORDER BY w.sequence DESC LIMIT 1),c.sealed) AS sealed,
+      c.created_at AS "createdAt" FROM nfc_credentials c WHERE c.id=$1`,
+      [id],
     );
     return rows[0] ? { ...rows[0], createdAt: new Date(rows[0].createdAt).toISOString() } : null;
   }
-  async importCredential(c: CredentialRecord): Promise<void> {
+  async insertCredential(c: CredentialRecord): Promise<void> {
     await this.manager.query(
       'INSERT INTO nfc_credentials(id,uid,versions,sealed,created_at) VALUES($1,$2,$3,$4,$5)',
       [c.id, c.uid, JSON.stringify(c.versions), JSON.stringify(c.sealed), c.createdAt],
     );
+  }
+  async promoteTarget(uid: string, credentialId: string): Promise<void> {
     await this.manager.query(
       'INSERT INTO nfc_inventory(uid,credential_id) VALUES($1,$2) ON CONFLICT(uid) DO UPDATE SET credential_id=EXCLUDED.credential_id',
-      [c.uid, c.id],
+      [uid, credentialId],
+    );
+  }
+  async importCredential(c: CredentialRecord): Promise<void> {
+    await this.insertCredential(c);
+    await this.promoteTarget(c.uid, c.id);
+  }
+  async bindTarget(
+    provisioningId: string,
+    operationId: string,
+    credentialId: string,
+  ): Promise<void> {
+    await this.manager.query('INSERT INTO nfc_personalization_targets VALUES($1,$2,$3)', [
+      provisioningId,
+      operationId,
+      credentialId,
+    ]);
+  }
+  async targetOperation(provisioningId: string): Promise<string | null> {
+    const rows: { operation_id: string }[] = await this.manager.query(
+      'SELECT operation_id FROM nfc_personalization_targets WHERE provisioning_id=$1',
+      [provisioningId],
+    );
+    return rows[0]?.operation_id ?? null;
+  }
+  async credentialsForRewrap(): Promise<CredentialRecord[]> {
+    // Serialize rotations and lock a stable snapshot; imports may append afterward using the active master.
+    await this.manager.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended('nfc-admin:rewrap',0))",
+    );
+    const rows: { id: string }[] = await this.manager.query(
+      'SELECT id FROM nfc_credentials ORDER BY id FOR UPDATE',
+    );
+    return Promise.all(rows.map(async (r) => (await this.credentialById(r.id))!));
+  }
+  async appendWrapper(
+    id: string,
+    credentialId: string,
+    sealed: SealedCredentials,
+    now: string,
+  ): Promise<void> {
+    await this.manager.query(
+      'INSERT INTO nfc_credential_wrappers(id,credential_id,sealed,created_at) VALUES($1,$2,$3,$4)',
+      [id, credentialId, JSON.stringify(sealed), now],
     );
   }
   async openByUid(uid: string): Promise<InspectionSnapshot | null> {
@@ -78,8 +132,12 @@ class PostgresAdministrationTransaction implements AdministrationTransaction {
     if (!ids[0]) return null;
     await this.manager.query('SELECT id FROM orders WHERE id=$1 FOR UPDATE', [ids[0].order_id]);
     const rows: ProvisioningGate[] = await this.manager.query(
-      `SELECT p.id,t.uid,t.model,p.epoch,p.strategy,p.status
-      FROM provisionings p JOIN tags t ON t.id=p.tag_id WHERE p.id=$1 FOR UPDATE OF p`,
+      `SELECT p.id,t.uid,t.model,p.epoch,p.strategy,p.status,
+      CASE WHEN p.sdm IS NOT NULL THEN p.sdm || jsonb_build_object('sealed',k.sealed) END AS sdm,
+      COALESCE(cs.maximum,-1) AS "sdmMaximum"
+      FROM provisionings p JOIN tags t ON t.id=p.tag_id
+      LEFT JOIN sdm_keys k ON k.provisioning_id=p.id LEFT JOIN sdm_counter_state cs ON cs.provisioning_id=p.id
+      WHERE p.id=$1 FOR UPDATE OF p`,
       [id],
     );
     return rows[0] ?? null;
@@ -87,7 +145,8 @@ class PostgresAdministrationTransaction implements AdministrationTransaction {
   private async readOperation(id: string): Promise<InspectionSnapshot | null> {
     const rows: InspectionSnapshot[] = await this.manager.query(
       `SELECT id,plan,plan_hash AS "planHash",actor_id AS "actorId",station,state,
-      created_at AS "createdAt",active_session AS "activeSession" FROM nfc_inspections WHERE id=$1`,
+      created_at AS "createdAt",active_session AS "activeSession",mutation_issued AS "mutationIssued",
+      data_verified AS "dataVerified",physical_outcome AS "physicalOutcome" FROM nfc_inspections WHERE id=$1`,
       [id],
     );
     return rows[0] ? { ...rows[0], createdAt: new Date(rows[0].createdAt).toISOString() } : null;
@@ -101,8 +160,9 @@ class PostgresAdministrationTransaction implements AdministrationTransaction {
   }
   async saveOperation(s: InspectionSnapshot): Promise<void> {
     await this.manager.query(
-      `INSERT INTO nfc_inspections(id,provisioning_id,uid,credential_id,actor_id,station,plan,plan_hash,state,created_at,active_session)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(id) DO UPDATE SET state=EXCLUDED.state,active_session=EXCLUDED.active_session`,
+      `INSERT INTO nfc_inspections(id,provisioning_id,uid,credential_id,actor_id,station,plan,plan_hash,state,created_at,active_session,mutation_issued,data_verified,physical_outcome)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT(id) DO UPDATE SET state=EXCLUDED.state,active_session=EXCLUDED.active_session,
+      mutation_issued=EXCLUDED.mutation_issued,data_verified=EXCLUDED.data_verified,physical_outcome=EXCLUDED.physical_outcome`,
       [
         s.id,
         s.plan.provisioningId,
@@ -115,6 +175,9 @@ class PostgresAdministrationTransaction implements AdministrationTransaction {
         s.state,
         s.createdAt,
         s.activeSession,
+        s.mutationIssued,
+        s.dataVerified,
+        s.physicalOutcome,
       ],
     );
   }

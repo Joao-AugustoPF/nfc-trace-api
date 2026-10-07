@@ -17,6 +17,11 @@ import {
   MaxLength,
   Min,
   MinLength,
+  IsOptional,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
+  IsIn,
 } from 'class-validator';
 import { Principal, AllowRoles } from '../../../../platform/access/http-security';
 import { ApiSuccess } from '../../../../platform/http/api-response';
@@ -24,6 +29,7 @@ import { AuthenticatedActor } from '../../../../shared-kernel/actor';
 import { NfcAdministration } from '../../application/administration-service';
 import { InspectionSnapshot } from '../../domain/inspection';
 import { SessionReply } from '../../application/ports';
+import { MaterialChoice } from '../../domain/personalization-plan';
 
 const Lower = () =>
   Transform(({ value }: { value: unknown }) =>
@@ -54,6 +60,20 @@ export class RfSessionDto extends StationDto {
   })
   @IsBoolean()
   recuperar!: boolean;
+  @ApiPropertyOptional({
+    type: [String],
+    enum: ['ATUAL', 'ALVO'],
+    minItems: 5,
+    maxItems: 5,
+    description:
+      'Personalização: material explicitamente selecionado para slots 0 a 4. Obrigatório na recuperação; não há tentativa de chave alternativa.',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(5)
+  @ArrayMaxSize(5)
+  @IsIn(['ATUAL', 'ALVO'], { each: true })
+  materiais?: MaterialChoice[];
 }
 export class RfResponseDto extends StationDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') @Lower() comandoId!: string;
@@ -83,15 +103,27 @@ export class JournalQuery {
   @Max(100)
   limite = 25;
 }
+export class NfcPersonalizationPlanResponse {
+  @ApiProperty() perfil!: string;
+  @ApiProperty({ format: 'uuid' }) referenciaAlvo!: string;
+  @ApiProperty({ type: [Number] }) versoesAlvo!: number[];
+  @ApiProperty() imagemNdefHex!: string;
+  @ApiProperty() imagemCcHex!: string;
+  @ApiProperty() configuracaoNdefFinalHex!: string;
+  @ApiProperty() configuracaoCcFinalHex!: string;
+  @ApiProperty({ type: String, nullable: true }) perfilSdm!: string | null;
+}
 export class NfcInspectionPlanResponse {
   @ApiProperty({ example: 1 }) versao!: number;
-  @ApiProperty({ enum: ['INSPECAO_EV2'] }) finalidade!: string;
+  @ApiProperty({ enum: ['INSPECAO_EV2', 'PERSONALIZACAO'] }) finalidade!: string;
   @ApiProperty({ format: 'uuid' }) provisionamentoId!: string;
   @ApiProperty() uid!: string;
   @ApiProperty() epoca!: number;
   @ApiProperty() estrategia!: string;
   @ApiProperty({ format: 'uuid' }) referenciaCredenciais!: string;
   @ApiProperty({ type: [Number] }) versoesChaves!: number[];
+  @ApiProperty({ type: NfcPersonalizationPlanResponse, nullable: true })
+  personalizacao!: NfcPersonalizationPlanResponse | null;
 }
 export class NfcInspectionResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -100,11 +132,22 @@ export class NfcInspectionResponse {
   @ApiProperty() administradorId!: string;
   @ApiProperty() estacao!: string;
   @ApiProperty({
-    enum: ['PREPARADA', 'INSPECIONANDO', 'INSPECIONADA', 'INTERROMPIDA', 'ENCERRADA'],
+    enum: [
+      'PREPARADA',
+      'INSPECIONANDO',
+      'INSPECIONADA',
+      'PERSONALIZANDO',
+      'PERSONALIZADA',
+      'INTERROMPIDA',
+      'ENCERRADA',
+    ],
   })
   status!: string;
   @ApiProperty() criadaEm!: string;
   @ApiProperty({ type: String, nullable: true }) sessaoAtivaId!: string | null;
+  @ApiProperty() alteracaoEmitida!: boolean;
+  @ApiProperty() conteudoConferido!: boolean;
+  @ApiProperty({ enum: ['NAO_ALTERADA', 'NAO_CONFIRMADA', 'CONFERIDA'] }) alteracaoFisica!: string;
 }
 export class NfcInspectionCommandResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -115,6 +158,7 @@ export class NfcInspectionCommandResponse {
       'Transmitir no máximo uma vez nesta sessão RF. Repetição HTTP não autoriza reenvio NFC.',
   })
   apduHex!: string;
+  @ApiProperty() alteraTag!: boolean;
 }
 export class NfcInspectionResultResponse {
   @ApiProperty() uid!: string;
@@ -123,7 +167,8 @@ export class NfcInspectionResultResponse {
   @ApiProperty({ type: [Number] }) slotsAutenticados!: number[];
   @ApiProperty({
     example: false,
-    description: 'Inspeção não instala chaves, não grava NDEF e não ativa vínculo.',
+    description:
+      'True somente após conteúdo, perfil e cinco slots alvo conferidos. Não ativa vínculo.',
   })
   personalizada!: boolean;
 }
@@ -136,6 +181,7 @@ export class NfcInspectionSessionResponse {
   @ApiProperty({ type: NfcInspectionResultResponse, nullable: true })
   resultado!: NfcInspectionResultResponse | null;
   @ApiProperty({ type: String, nullable: true }) codigo!: string | null;
+  @ApiProperty({ enum: ['NAO_ALTERADA', 'NAO_CONFIRMADA', 'CONFERIDA'] }) alteracaoFisica!: string;
 }
 export class NfcAdministrationJournalResponse {
   @ApiProperty() id!: string;
@@ -156,6 +202,18 @@ const inspectionResponse = (s: InspectionSnapshot): NfcInspectionResponse => ({
     estrategia: s.plan.strategy,
     referenciaCredenciais: s.plan.credentialReference,
     versoesChaves: s.plan.keyVersions,
+    personalizacao: s.plan.personalization
+      ? {
+          perfil: s.plan.personalization.profile,
+          referenciaAlvo: s.plan.personalization.targetReference,
+          versoesAlvo: s.plan.personalization.targetVersions,
+          imagemNdefHex: s.plan.personalization.ndefImageHex,
+          imagemCcHex: s.plan.personalization.ccImageHex,
+          configuracaoNdefFinalHex: s.plan.personalization.finalNdefSettingsHex,
+          configuracaoCcFinalHex: s.plan.personalization.finalCcSettingsHex,
+          perfilSdm: s.plan.personalization.sdmProfile,
+        }
+      : null,
   },
   hashPlano: s.planHash,
   administradorId: s.actorId,
@@ -163,6 +221,9 @@ const inspectionResponse = (s: InspectionSnapshot): NfcInspectionResponse => ({
   status: s.state,
   criadaEm: s.createdAt,
   sessaoAtivaId: s.activeSession,
+  alteracaoEmitida: s.mutationIssued,
+  conteudoConferido: s.dataVerified,
+  alteracaoFisica: s.physicalOutcome,
 });
 const sessionResponse = (s: SessionReply): NfcInspectionSessionResponse => ({
   sessaoId: s.sessionId,
@@ -174,6 +235,7 @@ const sessionResponse = (s: SessionReply): NfcInspectionSessionResponse => ({
         sequencia: s.command.sequence,
         etapa: s.command.step,
         apduHex: s.command.apduHex,
+        alteraTag: s.command.mutates ?? false,
       }
     : null,
   resultado: s.result
@@ -182,19 +244,20 @@ const sessionResponse = (s: SessionReply): NfcInspectionSessionResponse => ({
         configuracaoNdefHex: s.result.ndefSettingsHex,
         versoesChaves: s.result.keyVersions,
         slotsAutenticados: s.result.authenticatedSlots,
-        personalizada: false,
+        personalizada: s.result.personalized,
       }
     : null,
   codigo: s.errorCode,
+  alteracaoFisica: s.physicalOutcome ?? 'NAO_ALTERADA',
 });
 
 @ApiTags('Administração NFC')
 @ApiBearerAuth()
 @AllowRoles('ADMINISTRADOR')
-@Controller('administracao-nfc/inspecoes')
+@Controller('administracao-nfc')
 export class NfcAdministrationController {
   constructor(private readonly service: NfcAdministration) {}
-  @Post()
+  @Post('inspecoes')
   @ApiSuccess(NfcInspectionResponse, 201)
   @ApiOperation({
     summary: 'Preparar plano de inspeção EV2 de vínculo pendente; exige inventário privado local.',
@@ -207,7 +270,22 @@ export class NfcAdministrationController {
       ),
     );
   }
-  @Get(':id')
+  @Post('personalizacoes')
+  @ApiSuccess(NfcInspectionResponse, 201)
+  @ApiOperation({
+    summary:
+      'Preparar alvo imutável por época e plano de proteção UID, NDEF ou SDM. Não grava a tag nesta chamada.',
+  })
+  async personalize(@Body() b: PrepareInspectionDto, @Principal() a: AuthenticatedActor) {
+    return inspectionResponse(
+      await this.service.prepare(
+        { id: b.id, provisioningId: b.provisionamentoId, station: b.estacao },
+        a,
+        'PERSONALIZACAO',
+      ),
+    );
+  }
+  @Get(['operacoes/:id', 'inspecoes/:id'])
   @ApiSuccess(NfcInspectionResponse)
   async get(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -215,7 +293,19 @@ export class NfcAdministrationController {
   ) {
     return inspectionResponse(await this.service.get(id, a));
   }
-  @Get(':id/diario')
+  @Get('provisionamentos/:id/personalizacao')
+  @ApiSuccess(NfcInspectionResponse)
+  @ApiOperation({
+    summary:
+      'Localizar a operação original pelo vínculo, inclusive após perda do armazenamento local do aparelho.',
+  })
+  async forProvisioning(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Principal() a: AuthenticatedActor,
+  ) {
+    return inspectionResponse(await this.service.forProvisioning(id, a));
+  }
+  @Get(['operacoes/:id/diario', 'inspecoes/:id/diario'])
   @ApiSuccess(NfcAdministrationJournalResponse, 200, true)
   async journal(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -237,11 +327,12 @@ export class NfcAdministrationController {
       limite: q.limite,
     };
   }
-  @Post(':id/sessoes')
+  @Post(['operacoes/:id/sessoes', 'inspecoes/:id/sessoes'])
   @HttpCode(200)
   @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({
-    summary: 'Abrir sessão RF isolada; comandos não alteram a tag. Recuperação exige UUID RF novo.',
+    summary:
+      'Abrir RF isolada para o plano preparado. Personalização poderá gravar; recuperação exige RF novo e seleção explícita dos cinco slots.',
   })
   async begin(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -251,12 +342,18 @@ export class NfcAdministrationController {
     return sessionResponse(
       await this.service.begin(
         id,
-        { id: b.id, rfSessionId: b.sessaoRfId, station: b.estacao, recovery: b.recuperar },
+        {
+          id: b.id,
+          rfSessionId: b.sessaoRfId,
+          station: b.estacao,
+          recovery: b.recuperar,
+          ...(b.materiais ? { materials: b.materiais } : {}),
+        },
         a,
       ),
     );
   }
-  @Post(':id/sessoes/:sessaoId/respostas')
+  @Post(['operacoes/:id/sessoes/:sessaoId/respostas', 'inspecoes/:id/sessoes/:sessaoId/respostas'])
   @HttpCode(200)
   @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({
@@ -283,7 +380,7 @@ export class NfcAdministrationController {
       ),
     );
   }
-  @Post(':id/encerramento')
+  @Post(['operacoes/:id/encerramento', 'inspecoes/:id/encerramento'])
   @HttpCode(200)
   @ApiSuccess(NfcInspectionResponse)
   async end(
@@ -293,7 +390,10 @@ export class NfcAdministrationController {
   ) {
     return inspectionResponse(await this.service.end(id, b.estacao, a));
   }
-  @Post(':id/sessoes/:sessaoId/interrupcao')
+  @Post([
+    'operacoes/:id/sessoes/:sessaoId/interrupcao',
+    'inspecoes/:id/sessoes/:sessaoId/interrupcao',
+  ])
   @HttpCode(200)
   @ApiSuccess(NfcInspectionSessionResponse)
   @ApiOperation({

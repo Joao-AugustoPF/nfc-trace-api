@@ -194,5 +194,18 @@ seguinte e outbox têm commit conjunto. Rollback que avance EV2 descarta o canal
 outro RF/recuperação explícita são exigidos. Repetição HTTP devolve checkpoint atual
 sem retransmitir NFC nem oferecer APDU antiga. Sessão fixa por conta/sessão/estação/RF
 tem lease de três minutos; o diário é consultável antes do consumidor de auditoria.
-Plano de mutações/material alvo, escrita parcial e transporte/tela mobile seguem
+O incremento de personalização conserva credenciais atuais e alvo em referências
+distintas; uma única operação/alvo por época. Somente a conferência completa promove
+o alvo ao inventário. Wrappers de cofre são rotacionados por append, sem modificar
+material/versões físicos. Configuração temporária exige leitura FULL por slot 0;
+NLEN/conteúdo/CC são conferidos antes do perfil público. Slot 0 muda por último e
+exige nova autenticação. Aplicar o SDM final é a última alteração de NDEF.
+
+Intenção de mutação implica efeito físico não confirmado, inclusive após reinício.
+Diário de prova dos bytes precede configuração final. Recuperação exige selecionar
+ATUAL/ALVO para cada slot, autenticar todos e conservar alvo; não tenta outra chave.
+SDM final com alvo completo e prova persistida permite somente conferência, sem
+reiniciar contador. Sem prova, não regrava. Ativação/encerramento de vínculo consultam
+uma porta de administração, fornecida pela plataforma, sob o mesmo bloqueio de pedido;
+não podem tornar irrecuperável uma mutação pendente. Tela/transporte mobile seguem
 na #12. [Contrato, CLI e limites](ntag-administration.md).

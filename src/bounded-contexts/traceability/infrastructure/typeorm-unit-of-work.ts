@@ -14,6 +14,16 @@ import { SealedSdmKeys } from '../application/sdm-ports';
 import { decisionRepository } from './decision-store';
 
 export type AuthorizationFactory = (manager: EntityManager) => CaptureAuthorization;
+export type AdministrationGateFactory = (manager: EntityManager) => Transaction['administration'];
+const unavailableAdministration: AdministrationGateFactory = () => ({
+  async assertLifecycle() {
+    throw new DomainError(
+      'NFC_ADMINISTRACAO_INDISPONIVEL',
+      'A composição não configurou a proteção do ciclo de provisionamento.',
+      'unavailable',
+    );
+  },
+});
 const denyAuthorization: AuthorizationFactory = () => ({
   async check() {
     return { allowed: false, reason: 'IDENTIDADE_NAO_VERIFICADA', expiresAt: null };
@@ -23,8 +33,10 @@ const denyAuthorization: AuthorizationFactory = () => ({
 export function createTransaction(
   manager: EntityManager,
   authorization: AuthorizationFactory = denyAuthorization,
+  administration: AdministrationGateFactory = unavailableAdministration,
 ): Transaction {
   return {
+    administration: administration(manager),
     measurements: {
       async record(observationId, revision, boundary, clock, startMs, endMs) {
         await manager.query(
@@ -211,11 +223,12 @@ export class TypeOrmUnitOfWork implements UnitOfWork {
   constructor(
     private readonly source: DataSource,
     private readonly authorization: AuthorizationFactory = denyAuthorization,
+    private readonly administration: AdministrationGateFactory = unavailableAdministration,
   ) {}
   async run<T>(work: (tx: Transaction) => Promise<T>): Promise<T> {
     try {
       return await this.source.transaction('READ COMMITTED', (manager) =>
-        work(createTransaction(manager, this.authorization)),
+        work(createTransaction(manager, this.authorization, this.administration)),
       );
     } catch (error) {
       if (error instanceof QueryFailedError) {

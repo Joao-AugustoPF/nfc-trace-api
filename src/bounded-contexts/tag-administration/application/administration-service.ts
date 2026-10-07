@@ -1,6 +1,7 @@
 import { AccessError, AuthenticatedActor } from '../../../shared-kernel/actor';
 import { DomainError } from '../../../shared-kernel/domain-error';
 import { Inspection, InspectionSnapshot, validateInventory } from '../domain/inspection';
+import { MaterialChoice, personalizationPlan } from '../domain/personalization-plan';
 import {
   AdministrationClock,
   AdministrationFingerprint,
@@ -12,6 +13,8 @@ import {
   JournalEntry,
   SessionRecord,
   SessionReply,
+  TargetGenerator,
+  PersonalizationGateway,
 } from './ports';
 
 export class ImportNfcInventory {
@@ -69,6 +72,7 @@ export interface BeginRfSession {
   rfSessionId: string;
   station: string;
   recovery: boolean;
+  materials?: MaterialChoice[];
 }
 export interface SubmitRfResponse {
   commandId: string;
@@ -85,6 +89,7 @@ export class NfcAdministration {
     private readonly ids: AdministrationIds,
     private readonly fingerprint: AdministrationFingerprint,
     private readonly leaseSeconds = 180,
+    private readonly targets?: TargetGenerator,
   ) {}
   private admin(actor: AuthenticatedActor): void {
     if (actor.role !== 'ADMINISTRADOR')
@@ -153,12 +158,13 @@ export class NfcAdministration {
       command: null,
       result: null,
       errorCode: code,
+      physicalOutcome: op.snapshot().physicalOutcome,
     };
     await tx.saveSession(session);
     await tx.saveOperation(op.snapshot());
     await this.log(tx, op, 'INTERROMPIDA', session.id, {
       codigo: code,
-      alteracaoFisica: false,
+      alteracaoFisica: op.snapshot().physicalOutcome,
       novaSessaoRfObrigatoria: true,
     });
   }
@@ -181,7 +187,11 @@ export class NfcAdministration {
           : 'NFC_SESSAO_PERDIDA',
       );
   }
-  async prepare(input: BeginInspection, actor: AuthenticatedActor): Promise<InspectionSnapshot> {
+  async prepare(
+    input: BeginInspection,
+    actor: AuthenticatedActor,
+    purpose: 'INSPECAO_EV2' | 'PERSONALIZACAO' = 'INSPECAO_EV2',
+  ): Promise<InspectionSnapshot> {
     this.admin(actor);
     return this.store.run(async (tx) => {
       await tx.authorize(actor, this.clock.now());
@@ -190,7 +200,8 @@ export class NfcAdministration {
         if (
           existing.plan.provisioningId !== input.provisioningId ||
           existing.actorId !== actor.userId ||
-          existing.station !== input.station
+          existing.station !== input.station ||
+          existing.plan.purpose !== purpose
         )
           throw new DomainError(
             'NFC_IDEMPOTENCIA_CONFLITO',
@@ -233,15 +244,49 @@ export class NfcAdministration {
           'conflict',
         );
       validateInventory(link.uid, credentials.versions);
+      const now = this.clock.now();
+      let target: Awaited<ReturnType<TargetGenerator['generate']>> | undefined;
+      if (purpose === 'PERSONALIZACAO') {
+        if (!this.targets)
+          throw new DomainError(
+            'NFC_PERSONALIZACAO_INDISPONIVEL',
+            'Gerador de material indisponível.',
+            'unavailable',
+          );
+        if (await tx.targetOperation(link.id))
+          throw new DomainError(
+            'NFC_ALVO_EXISTENTE',
+            'Esta época já possui um alvo; recupere a operação original ou encerre o vínculo.',
+            'conflict',
+          );
+        if ((link.sdmMaximum ?? -1) >= 0)
+          throw new DomainError(
+            'NFC_EPOCA_JA_UTILIZADA',
+            'O contador desta época já possui evidência. Não é permitido reiniciar o perfil SDM.',
+            'conflict',
+          );
+        target = this.targets.generate(this.ids.next(), credentials, link, now);
+        await tx.insertCredential(target);
+      }
       const plan = {
         version: 1 as const,
-        purpose: 'INSPECAO_EV2' as const,
+        purpose,
         provisioningId: link.id,
         uid: link.uid,
         epoch: link.epoch,
         strategy: link.strategy,
         credentialReference: credentials.id,
         keyVersions: [...credentials.versions],
+        ...(target
+          ? {
+              personalization: personalizationPlan(
+                link.id,
+                link.strategy,
+                target.id,
+                target.versions,
+              ),
+            }
+          : {}),
       };
       const op = Inspection.prepare({
         id: input.id,
@@ -249,13 +294,15 @@ export class NfcAdministration {
         planHash: this.fingerprint.of(plan),
         actorId: actor.userId,
         station: input.station,
-        createdAt: this.clock.now(),
+        createdAt: now,
       });
       await tx.saveOperation(op.snapshot());
+      if (target) await tx.bindTarget(link.id, input.id, target.id);
       await this.log(tx, op, 'PREPARADA', null, {
         hashPlano: op.snapshot().planHash,
         finalidade: plan.purpose,
         referenciaCredenciais: credentials.id,
+        ...(target ? { referenciaAlvo: target.id } : {}),
       });
       return op.snapshot();
     });
@@ -265,6 +312,22 @@ export class NfcAdministration {
     return this.store.run(async (tx) => {
       await tx.authorize(actor, this.clock.now());
       const op = await this.load(tx, id);
+      await this.refresh(tx, op);
+      return op.snapshot();
+    });
+  }
+  async forProvisioning(id: string, actor: AuthenticatedActor): Promise<InspectionSnapshot> {
+    this.admin(actor);
+    return this.store.run(async (tx) => {
+      await tx.authorize(actor, this.clock.now());
+      const operationId = await tx.targetOperation(id);
+      if (!operationId)
+        throw new DomainError(
+          'NFC_PERSONALIZACAO_INEXISTENTE',
+          'Este vínculo não possui personalização preparada.',
+          'not-found',
+        );
+      const op = await this.load(tx, operationId);
       await this.refresh(tx, op);
       return op.snapshot();
     });
@@ -281,11 +344,29 @@ export class NfcAdministration {
     tx: AdministrationTransaction,
     op: Inspection,
     session: SessionRecord,
-    frame: { step: string; apduHex: string },
+    frame: { step: string; apduHex: string; mutates?: boolean },
     sequence: number,
   ): Promise<void> {
     const id = this.ids.next();
+    if (frame.mutates) {
+      const link = await tx.provisioning(op.snapshot().plan.provisioningId);
+      if (!link || link.status !== 'REGISTRADA')
+        throw new DomainError(
+          'NFC_VINCULO_NAO_PENDENTE',
+          'O vínculo não permite gravação.',
+          'conflict',
+        );
+      if ((link.sdmMaximum ?? -1) >= 0)
+        throw new DomainError(
+          'NFC_EPOCA_JA_UTILIZADA',
+          'Não é permitido reconfigurar uma época SDM com evidência persistida.',
+          'conflict',
+        );
+      op.issueMutation(frame.step.startsWith('GRAVAR_'));
+      await tx.saveOperation(op.snapshot());
+    }
     session.reply.command = { ...frame, id, sequence };
+    session.reply.physicalOutcome = op.snapshot().physicalOutcome;
     // Persist command identity/digest before returning its APDU. Never persist private key material.
     await tx.saveSession(session);
     await this.log(
@@ -298,7 +379,7 @@ export class NfcAdministration {
         sequencia: sequence,
         etapa: frame.step,
         hashComando: this.fingerprint.of(frame.apduHex),
-        alteraTag: false,
+        alteraTag: frame.mutates ?? false,
       },
       id,
     );
@@ -361,7 +442,53 @@ export class NfcAdministration {
             errorCode: null,
           },
         };
-        const frame = this.gateway.start(input.id, credential, expiresAt);
+        let frame: { step: string; apduHex: string; mutates?: boolean };
+        if (op.snapshot().plan.purpose === 'PERSONALIZACAO') {
+          const material =
+            input.materials ?? (input.recovery ? [] : Array<MaterialChoice>(5).fill('ATUAL'));
+          if (material.length !== 5 || material.some((c) => !['ATUAL', 'ALVO'].includes(c)))
+            throw new DomainError(
+              'NFC_MATERIAL_INVALIDO',
+              'Na recuperação, selecione ATUAL ou ALVO para cada um dos cinco slots.',
+            );
+          if (!input.recovery && material.some((c) => c !== 'ATUAL'))
+            throw new DomainError(
+              'NFC_RECUPERACAO_EXPLICITA',
+              'O material ALVO exige recuperação explícita.',
+              'conflict',
+            );
+          const target = await tx.credentialById(
+            op.snapshot().plan.personalization!.targetReference,
+          );
+          if (!target)
+            throw new DomainError(
+              'NFC_ALVO_INDISPONIVEL',
+              'Material alvo indisponível.',
+              'unavailable',
+            );
+          const gateway = this.gateway as PersonalizationGateway;
+          if (typeof gateway.startPersonalization !== 'function')
+            throw new DomainError(
+              'NFC_PERSONALIZACAO_INDISPONIVEL',
+              'Protocolo indisponível.',
+              'unavailable',
+            );
+          frame = gateway.startPersonalization(
+            input.id,
+            credential,
+            target,
+            op.snapshot(),
+            material,
+            expiresAt,
+          );
+        } else {
+          if (input.materials)
+            throw new DomainError(
+              'NFC_MATERIAL_INVALIDO',
+              'A inspeção usa somente o inventário atual.',
+            );
+          frame = this.gateway.start(input.id, credential, expiresAt);
+        }
         allocated = true;
         await tx.saveOperation(op.snapshot());
         await this.intent(tx, op, session, frame, 1);
@@ -429,22 +556,49 @@ export class NfcAdministration {
         touched = true;
         try {
           const next = this.gateway.accept(sessionId, input.responseHex);
+          if (next.dataVerified && !op.snapshot().dataVerified) {
+            op.verifyData();
+            await tx.saveOperation(op.snapshot());
+            await this.log(tx, op, 'DADOS_CONFERIDOS', sessionId, {
+              comandoId: previous.id,
+              hashPlano: op.snapshot().planHash,
+            });
+          }
           if (next.command) await this.intent(tx, op, session, next.command, previous.sequence + 1);
           else {
             op.complete();
+            if (op.snapshot().plan.purpose === 'PERSONALIZACAO') {
+              if (!next.result?.personalized)
+                throw new DomainError(
+                  'NFC_CONFERENCIA_INCOMPLETA',
+                  'A operação não confirmou o alvo.',
+                  'conflict',
+                );
+              await tx.promoteTarget(
+                op.snapshot().plan.uid,
+                op.snapshot().plan.personalization!.targetReference,
+              );
+            }
             session.reply = {
               ...session.reply,
               state: 'CONCLUIDA',
               command: null,
               result: next.result,
               errorCode: null,
+              physicalOutcome: op.snapshot().physicalOutcome,
             };
             await tx.saveSession(session);
             await tx.saveOperation(op.snapshot());
-            await this.log(tx, op, 'INSPECIONADA', sessionId, {
-              slotsAutenticados: next.result!.authenticatedSlots,
-              personalizada: false,
-            });
+            await this.log(
+              tx,
+              op,
+              next.result!.personalized ? 'PERSONALIZADA' : 'INSPECIONADA',
+              sessionId,
+              {
+                slotsAutenticados: next.result!.authenticatedSlots,
+                personalizada: next.result!.personalized,
+              },
+            );
           }
         } catch (error) {
           if (!(error instanceof DomainError)) throw error;
@@ -475,6 +629,7 @@ export class NfcAdministration {
       const op = await this.load(tx, id);
       this.owner(op.snapshot(), actor, station);
       if (op.snapshot().state === 'ENCERRADA') return op.snapshot();
+      op.assertCanEnd();
       const active = op.snapshot().activeSession;
       if (active) await this.stop(tx, op, (await tx.session(active))!, 'NFC_CANCELADA');
       op.end();

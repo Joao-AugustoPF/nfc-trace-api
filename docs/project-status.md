@@ -34,7 +34,7 @@ validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Motor EV2, cofre/inventário de cinco slots e inspeção administrativa com diário/API disponíveis; faltam tela/transporte mobile, material alvo, plano de gravação/recuperação parcial, perfil definitivo e aceite NTAG | Integração de código/procedimento restantes e hardware real |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | API de inspeção/personalização UID/NDEF/SDM, alvo por época, recuperação parcial e rotação do cofre disponíveis; faltam tela/transporte mobile, ativação integrada em novo RF, perfil definitivo e aceite NTAG | Integração mobile/procedimento restantes e hardware real |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
@@ -177,8 +177,8 @@ revalidadas no banco. Mestras permanecem externas e wrappers anteriores preserva
 
 Inspeção não grava nem instala chaves; resultado explicita `personalizada:false` e
 vínculo permanece REGISTRADA. Somente Feiju disponível, sem teste físico ou alteração
-mobile. Próximo incremento: material alvo/plano protegido, recuperação de escrita
-parcial e tela/transporte NFC no Nova-tag. Checkboxes de personalização/aceite da #12
+mobile naquele incremento. Material alvo/plano protegido e recuperação de escrita
+parcial estão descritos abaixo. Checkboxes de personalização/aceite da #12
 continuam abertos, assim como #8/#9. Ver [contrato/procedimento](ntag-administration.md).
 
 Validação local: **166 testes/16 suítes**, PostgreSQL real/Supertest; 17 integrações
@@ -189,3 +189,30 @@ vínculo encerrado, imutabilidade, rollback de intenção/resposta/canal e schem
 OpenAPI de autenticação/inspeção distintos. Lint/oito
 fronteiras, tipos, formatter, build e OpenAPI passaram. Endpoints administrativos
 de inspeção documentados; não há endpoint de APDU arbitrária ou chave bruta.
+
+## Personalização recuperável no servidor da #12
+
+Mesmo PR #20/branch: alvo privado imutável dos cinco slots por provisionamento/época;
+slots 1/2 SDM usam o material já emitido para a época; demais slots gerados no servidor.
+Plano UID/NDEF/SDM com proteção temporária, CC, NLEN zero, gravação em trechos de 80
+bytes e conferência FULL. Troca de slot 0 por último, nova autenticação, conferência
+de todos os slots/versões e configuração final. Nenhuma ativação por ACK.
+
+Sétima migration: alvo por época, wrappers append-only e checkpoints de alteração
+física/prova de conteúdo. API registra intenção antes de emitir mutações; resultado
+fica NAO_CONFIRMADA até concluir. Recuperação conserva alvo e exige escolha explícita
+ATUAL/ALVO por slot. SDM já aplicado com prova persistida só é conferido, sem reset;
+época com evidência não pode receber nova mutação. Vínculo/operação com alteração
+pendente não podem ser encerrados, nem ativados. CLI rewrap preserva referências,
+histórico/material físico e produz outbox na mesma transação.
+
+Validação local: **186 testes/17 suítes**, PostgreSQL/Supertest, incluindo 20 testes
+novos de personalização com PICC sintética: três tratamentos, perda de ACK de escrita,
+troca de chave e perfil SDM, reinício, reenvio HTTP, escolha de material, ausência de
+prova, contador já reservado, concorrência/alvo único e rollback/outbox/cofre.
+Lint/oito fronteiras, tipos, formatter, build/OpenAPI e reprodução local são verificados
+antes da publicação. Fixtures não cumprem os checkboxes físicos da #12.
+
+Ainda falta integrar tela/transporte no Nova-tag e ativação após outra sessão RF,
+além de NTAG real, proteção/recuperação físicas e perfil final. Mobile não mudou;
+nenhum Actions, EAS ou merge. #12/#8/#9 continuam abertas.

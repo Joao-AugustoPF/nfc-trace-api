@@ -75,6 +75,14 @@ export class NodeCredentialVault implements CredentialVault {
       throw this.unavailable();
     }
   }
+  rewrap(record: CredentialRecord): SealedCredentials {
+    const plain = this.unseal(record);
+    try {
+      return this.seal(record.id, record.uid, record.versions, plain);
+    } finally {
+      plain.fill(0);
+    }
+  }
   close(): void {
     for (const key of this.#masters.values()) key.fill(0);
     this.#masters.clear();

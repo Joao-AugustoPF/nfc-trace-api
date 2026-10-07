@@ -3,6 +3,7 @@ import { readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ImportNfcInventory } from '../../bounded-contexts/tag-administration/application/administration-service';
+import { RewrapNfcInventory } from '../../bounded-contexts/tag-administration/application/rewrap-inventory';
 import { NodeCredentialVault } from '../../bounded-contexts/tag-administration/infrastructure/credential-vault';
 import { PostgresAdministrationStore } from '../../bounded-contexts/tag-administration/infrastructure/postgres-administration-store';
 import { createDataSource } from '../database/data-source';
@@ -53,6 +54,35 @@ export function parseInventory(value: unknown): {
   }
 }
 async function main(): Promise<void> {
+  if (process.argv[2] === 'rewrap') {
+    if (process.argv.length !== 3) throw new Error('Use rewrap without private material arguments');
+    loadEnv({ quiet: true });
+    loadSdmEnv();
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+    const vault = new NodeCredentialVault(
+      process.env.SDM_ACTIVE_MASTER_VERSION,
+      process.env.SDM_MASTER_KEYS_JSON,
+    );
+    try {
+      const source = await createDataSource(process.env.DATABASE_URL).initialize();
+      try {
+        const result = await new RewrapNfcInventory(
+          new PostgresAdministrationStore(source),
+          vault,
+          new SystemClock(),
+          new NodeIds(),
+        ).execute();
+        process.stdout.write(
+          JSON.stringify({ envelopesRotacionados: result, chavesFisicasAlteradas: false }) + '\n',
+        );
+      } finally {
+        await source.destroy();
+      }
+    } finally {
+      vault.close();
+    }
+    return;
+  }
   const index = process.argv.indexOf('--input');
   if (process.argv[2] !== 'import' || index < 0 || !process.argv[index + 1])
     throw new Error('Use import --input .tmp/private/tag-credentials.json');
@@ -124,7 +154,7 @@ async function main(): Promise<void> {
 if (require.main === module)
   void main().catch(() => {
     process.stderr.write(
-      'Importação NFC não concluída. Confira arquivo privado, cinco slots, cofre e operação pendente. Nenhuma chave será exibida.\n',
+      'Operação do cofre NFC não concluída. Confira arquivo privado, cinco slots, versões mestras e operação pendente. Nenhuma chave será exibida.\n',
     );
     process.exitCode = 1;
   });

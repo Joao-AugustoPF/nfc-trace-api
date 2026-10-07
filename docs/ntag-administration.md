@@ -1,11 +1,11 @@
 # Administração NTAG 424 DNA — implementação progressiva da #12
 
 Branch `codex/issue-12-secure-messaging`, sobre a preparação de reprodução #9.
-O servidor dispõe do **motor EV2, inventário privado dos cinco slots e inspeção
-administrativa com diário durável/API**. A inspeção autentica cada slot, confirma
-UID e consulta configuração/versões; não instala chaves, não grava NDEF e não ativa
-vínculo. O transporte/tela mobile, plano de gravação e recuperação de configuração
-parcial ainda serão integrados. A #12 permanece aberta; somente a Feiju está disponível.
+O servidor dispõe do **motor EV2, cofre/inventário de cinco slots, inspeção e
+personalização recuperável com diário/API**. Inspeção somente consulta. Personalização
+prepara alvo por época, grava/protege e confere UID/conteúdo/configuração/chaves;
+nenhuma dessas operações ativa vínculo. Tela/transporte mobile e ativação integrada
+após novo RF ainda serão integrados. A #12 permanece aberta; somente Feiju está disponível.
 
 ## Inventário privado e fronteiras
 
@@ -35,8 +35,8 @@ da mestra por AAD. A mestra externa usa a configuração privada existente
 `SDM_ENV_FILE`/keyring, com propósito diferente do cofre SDM. Guardar o keyring
 separadamente do backup PostgreSQL; conservar todas as versões ainda usadas pelos
 wrappers. A CLI `sdm:keys rewrap` trata apenas o material SDM e **não** estes novos
-wrappers. Rotação dos wrappers administrativos e gestão de material alvo da
-personalização seguem no próximo incremento. Credenciais/referências anteriores
+wrappers. `nfc:inventory rewrap` trata o cofre administrativo, inclusive os alvos de
+personalização. Credenciais/referências anteriores
 são preservadas. Importação substitui a referência vigente apenas após encerrar
 a inspeção aberta e produz outbox auditada `InventarioNfcDeclarado`.
 
@@ -91,7 +91,8 @@ cancelar ou expirar; varredura de memória a cada cinco segundos. Após reiníci
 que avance o canal, ele é descartado: o próximo acesso marca sessão perdida e exige
 `recuperar:true` com novos IDs de sessão/RF. Não se recuperam chaves de sessão antigas
 a partir do banco. Ao recuperar inspeção, nada persistente foi alterado fisicamente;
-recuperação de escrita parcial será uma operação diferente, ainda pendente.
+personalização usa a mesma infraestrutura, com material e resultado físico explícitos
+conforme a seção abaixo.
 Remoção/cancelamento no aparelho deve chamar a interrupção da sessão antes de recuperar;
 não é preciso aguardar o lease. Encerramento da inspeção é uma ação final distinta.
 
@@ -100,6 +101,78 @@ Mesmo finalizada, a inspeção mantém o vínculo REGISTRADA. Resultado explicit
 NTAG424DNA para contornar compatibilidade.
 
 ## Protocolo implementado
+
+### Personalização e recuperação de mutações
+
+`POST /api/v1/administracao-nfc/personalizacoes` recebe `{id, provisionamentoId,
+estacao}`. Exige ADMINISTRADOR, vínculo REGISTRADA, modelo compatível e inventário
+importado. A transação gera/cifra o alvo uma única vez por época; reenvio conserva
+plano. Não gerar outro alvo para recuperar. Operação sem mutação pode ser encerrada
+e o vínculo desprovisionado para criar nova época; após mutação, conferir primeiro.
+
+`GET /api/v1/administracao-nfc/provisionamentos/{id}/personalizacao` localiza a operação
+original pelo vínculo, inclusive depois de perder os IDs locais. Continua exigindo
+ADMINISTRADOR; a execução permanece vinculada à conta/estação originais.
+
+Rotas comuns sob `/api/v1/administracao-nfc/operacoes/{id}`: consulta, `diario`,
+`sessoes`, `sessoes/{sessaoId}/respostas`, `sessoes/{sessaoId}/interrupcao` e
+`encerramento`. `/inspecoes/{id}` conserva aliases. O plano `personalizacao` contém
+referências/versões alvo, imagens CC/NDEF e configurações públicas; nenhuma chave.
+
+Estados PERSONALIZANDO → PERSONALIZADA. Cada comando informa `alteraTag`; a sessão
+informa `alteracaoFisica`: NAO_ALTERADA, NAO_CONFIRMADA ou CONFERIDA. Intenção de
+mutação já implica efeito não confirmado: transmissão/aplicação podem ocorrer com
+perda de resposta. Somente a conferência completa retorna `personalizada:true` e
+promove o alvo ao inventário. Cancelamento/lease/reinício conservam a pendência.
+Ativação e encerramento do vínculo são impedidos durante alteração desconhecida.
+
+1. Autenticar os cinco slots selecionados, UID e versões antes de qualquer alteração;
+   confirmar CC 32/NDEF 256 e Change=0. Não executar SetConfiguration, bloqueios
+   irreversíveis, RandomID, LRP ou limite de falhas de autenticação.
+2. Aplicar acesso temporário FULL Read/Write/Change=0. Conferir CC original; gravar
+   CC com NDEF WriteAccess=FF, mantendo acesso administrativo. NLEN zero, corpo em
+   trechos de até 80 bytes, conferência do corpo, NLEN final e conferência dos 256
+   bytes por FULL. Isso evita depender de native frame chaining.
+3. Persistir DADOS_CONFERIDOS antes do perfil final. Nova escrita invalida o checkpoint,
+   conservando recibos antigos. Trocar slots 1–4 quando necessário, slot 0 por último;
+   ACK sozinho é insuficiente. AuthenticateEV2First com alvo, UID, versões e prova
+   de todas as chaves. Aplicar/conferir CC e NDEF finais. UID deixa NLEN zero; estático
+   usa URN do vínculo; SDM conserva perfil candidato/offsets e chaves 1/2 da época.
+4. Conferir configurações por MAC e CC por FULL. O NDEF final permite leitura pública;
+   essa leitura não é prova FULL. A prova dos bytes precede o perfil público e está
+   ligada ao plano/recibo. Nenhuma operação administrativa ativa o vínculo.
+
+Recuperação exige `recuperar:true`, novos UUIDs de sessão/RF e `materiais`: cinco
+valores ATUAL/ALVO em ordem 0–4. Selecionam referências seladas, não recebem chaves.
+Não há tentativa automática de credencial alternativa. Uma escolha incompatível
+interrompe; versão sozinha não autentica chave. Exemplo após slot 1 instalado:
+
+```json
+{"id":"<novo-uuid>","sessaoRfId":"<novo-uuid-rf>","estacao":"bancada-1","recuperar":true,"materiais":["ATUAL","ALVO","ATUAL","ATUAL","ATUAL"]}
+```
+
+Reabilitar SDM reinicia o contador. Perfil final já aplicado, cinco slots ALVO e prova
+persistida permitem somente autenticação/conferência, sem escrita/troca/configuração.
+Sem prova ou material parcial incompatível, parar. Nenhuma mutação é emitida depois
+de evidência reservada para a época. Após uso, reconfiguração exige nova época/material.
+O comportamento de acesso livre e reset está descrito no [datasheet NXP, seções
+8.2.3.3 e 9.3.1](https://www.nxp.com/docs/en/data-sheet/NT4H2421Gx.pdf).
+
+### Rotação do cofre administrativo
+
+Adicionar a nova mestra ao keyring externo, manter as anteriores e escolher a nova
+como ativa; executar `npm run nfc:inventory -- rewrap`. Todas as referências atuais,
+alvo e históricas recebem wrappers append-only e outbox na mesma transação. Falha
+aborta o conjunto. IDs, UID, versões, planos, contador e chaves físicas não mudam;
+leitura usa o wrapper mais recente. CLI só imprime contagem e confirmação de que
+chaves físicas não foram alteradas.
+
+Cofre SDM é separado: executar também `npm run sdm:keys -- rewrap`. Os dois comandos
+não formam transação conjunta. Conservar versões mestras antigas até verificar
+ambas as rotações e recuperação de backups que ainda dependem delas. Keyring externo
+não está no dump PostgreSQL. Não exportar material alvo por HTTP/mobile.
+
+### Motor de protocolo
 
 `src/platform/nfc/ev2.ts` implementa uma sessão RF: AuthenticateEV2First/NonFirst,
 derivação de chaves, contador/TI, envelopes MAC/FULL, GetCardUID, GetFileSettings,
@@ -166,21 +239,13 @@ A decisão arquitetural é manter criptografia e material privado no servidor.
 O mobile será transporte APDU em uma sessão administrativa separada, usando sua
 ponte NFC real. Próximas partes **ainda devem ser implementadas**, na ordem:
 
-1. Material **alvo** dos cinco slots, referências atuais/alvo recuperáveis e plano de
-   gravação/proteção derivado do vínculo REGISTRADA. Chaves MetaRead/FileRead existentes
-   da #5 seguem por época; chave administrativa/slots não usados também precisam de
-   geração controlada e rotação dos wrappers administrativos.
-2. Ampliar o diário/API para mutações e ACK perdido com efeito físico desconhecido;
-   recuperação deve conferir quais credenciais/configurações foram instaladas,
-   conservando o mesmo alvo pendente. Inspeção pronta não resolve escrita parcial.
-3. Tela de bancada isolada no Nova-tag: identificação compatível antes de comando
+1. Tela de bancada isolada no Nova-tag: identificação compatível antes de comando
    específico, sessão NFC exclusiva, progresso persistente, confirmação de plano,
    cancelamento e recuperação. A Feiju continua incompatível com este protocolo.
-4. Aplicar plano protegido: confirmar UID; NLEN zero; gravação em trechos; leitura
-   estática autenticada; NLEN final/perfil; conferir configurações; slot 0 por último
-   e reautenticar. Leitura FULL depende do direito de leitura atual: usar configuração
-   temporária que exige slot 0; não tratar leitura livre ISO como prova autenticada.
-5. Nova sessão RF para leitura dinâmica e ativação existente, sem reset automático
+2. Transporte durável por comando: antes de transmitir, registrar localmente que
+   houve tentativa. Reenviar somente a resposta HTTP preservada; nunca retransmitir
+   APDU por timeout de rede. Recuperação com seleção dos slots e novo RF.
+3. Nova sessão RF para leitura dinâmica e ativação existente, sem reset automático
    ou ativação apenas pelo ACK. Reconfiguração de época ATIVA exige encerramento/nova
    época; recuperação parcial de uma operação pendente deve conservar seu alvo.
 
@@ -196,9 +261,12 @@ Motor: 20 testes EV2 com vetores NXP e casos adversariais/sintéticos. Inventár
 incluindo importação CLI real/ACL Windows, cinco slots, UID/chave/versão errados,
 concorrência/idempotência, lease/reinício, autorização/revogação, vínculo encerrado,
 append-only, rollback da intenção **e** da resposta/canal e separação dos schemas
-OpenAPI de login/inspeção. A suíte completa e
+OpenAPI de login/inspeção. Mais 20 testes de personalização: três tratamentos,
+gravação/troca de chaves, ACK perdido, SDM sem reset, provas ausentes, concorrência,
+reenvio, reinício, cofre e rollback transacional. A suíte completa e
 verificações finais estão registradas no [mapa de entregas](project-status.md).
 
-Não houve personalização, leitura NFC física, tela mobile nova, firmware, EAS,
+Houve personalização apenas contra PICC sintética. Não houve leitura NFC física,
+tela mobile nova, firmware, EAS,
 GitHub Actions ou merge. Builds móveis e seus aceites anteriores permanecem na #9.
 O material final e o piloto continuam dependentes de implementação/aceite #12 e #8.

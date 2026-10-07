@@ -36,6 +36,7 @@ export class ActivateProvisioning {
   ) {
     return this.uow.run(async (tx) => {
       const { provisioning, order, tag } = await lockProvisioning(tx, id);
+      await tx.administration.assertLifecycle(id, 'ATIVAR');
       if (provisioning.snapshot().status === 'REGISTRADA') order.assertCanProvision();
       const now = this.clock.now();
       const p = provisioning.snapshot();
@@ -101,6 +102,7 @@ export class CloseProvisioning {
   async execute(id: string, correlationId: string, actor: AuthenticatedActor | null = null) {
     return this.uow.run(async (tx) => {
       const { provisioning, tag } = await lockProvisioning(tx, id);
+      await tx.administration.assertLifecycle(id, 'ENCERRAR');
       const now = this.clock.now();
       if (provisioning.close(now)) {
         await tx.provisionings.save(provisioning);

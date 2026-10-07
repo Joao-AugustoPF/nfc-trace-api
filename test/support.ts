@@ -20,7 +20,7 @@ export async function testDatabase(): Promise<DataSource> {
 
 export async function resetDatabase(source: DataSource): Promise<void> {
   await source.query(
-    'TRUNCATE nfc_admin_responses, nfc_admin_journal, nfc_admin_sessions, nfc_inspections, nfc_inventory, nfc_credentials, operation_measurements, experiment_client_records, experiment_ground_truth, experiment_trials, experiment_runs, current_decisions, decision_revisions, sdm_evidence, sdm_counter_state, sdm_keys, security_audit, identity_login_limits, identity_sessions, identity_accounts, audit_log, inbox, outbox, movements, decisions, observations, provisionings, tags, orders',
+    'TRUNCATE nfc_credential_wrappers, nfc_personalization_targets, nfc_admin_responses, nfc_admin_journal, nfc_admin_sessions, nfc_inspections, nfc_inventory, nfc_credentials, operation_measurements, experiment_client_records, experiment_ground_truth, experiment_trials, experiment_runs, current_decisions, decision_revisions, sdm_evidence, sdm_counter_state, sdm_keys, security_audit, identity_login_limits, identity_sessions, identity_accounts, audit_log, inbox, outbox, movements, decisions, observations, provisionings, tags, orders',
   );
 }
 

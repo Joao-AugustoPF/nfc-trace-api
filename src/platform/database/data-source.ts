@@ -7,6 +7,7 @@ import { Sdm1790000002000 } from './migrations/1790000002000-sdm';
 import { Reconciliation1790000003000 } from './migrations/1790000003000-reconciliation';
 import { Experimentation1790000004000 } from './migrations/1790000004000-experimentation';
 import { TagAdministration1790000005000 } from './migrations/1790000005000-tag-administration';
+import { NfcPersonalization1790000006000 } from './migrations/1790000006000-nfc-personalization';
 
 export function createDataSource(url: string): DataSource {
   return new DataSource({
@@ -20,6 +21,7 @@ export function createDataSource(url: string): DataSource {
       Reconciliation1790000003000,
       Experimentation1790000004000,
       TagAdministration1790000005000,
+      NfcPersonalization1790000006000,
     ],
     synchronize: false,
     migrationsRun: false,

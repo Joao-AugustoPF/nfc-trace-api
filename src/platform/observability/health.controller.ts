@@ -29,6 +29,8 @@ export class HealthController {
       await this.source.query('SELECT boundary FROM operation_measurements LIMIT 1');
       await this.source.query('SELECT plan_hash FROM nfc_inspections LIMIT 1');
       await this.source.query('SELECT id FROM nfc_admin_journal LIMIT 1');
+      await this.source.query('SELECT credential_id FROM nfc_credential_wrappers LIMIT 1');
+      await this.source.query('SELECT operation_id FROM nfc_personalization_targets LIMIT 1');
       return { status: 'ready' };
     } catch {
       throw new ServiceUnavailableException('PostgreSQL ou migrations indisponíveis.');
