@@ -18,7 +18,8 @@ export function evaluateReading(
   const valid =
     provisioning.strategy === 'UID'
       ? reading.uid === tag.uid
-      : reading.ndef === ndefReference(provisioning.id);
+      : provisioning.strategy === 'NDEF_ESTATICO' &&
+        reading.ndef === ndefReference(provisioning.id);
   return {
     valid,
     reason: valid

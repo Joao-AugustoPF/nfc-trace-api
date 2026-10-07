@@ -60,8 +60,8 @@ em capturas distintas não é idempotência nem proteção contra replay de evid
   Outro operador/servidor não vê nem envia essa captura. Reautenticar o mesmo
   operador permite retomar; o token atual nunca substitui o operador declarado.
 - Cache por API/operador somente de vínculos ativos consultados online, por até
-  24 horas. UID desconhecido, vínculo expirado ou SDM operacional ainda indisponível
-  exigem ação explícita. NDEF do projeto resolve sua referência exata sem fallback
+  24 horas. Etiqueta desconhecida ou vínculo expirado exigem ação explícita.
+  NDEF estático/SDM do projeto resolve sua referência exata sem fallback
   UID. A API revalida vínculo e sequência no recebimento.
 - Um envio por item, claim com lease de 45 segundos, FIFO por pedido e backoff
   exponencial limitado a 5 minutos. Resposta atrasada de um claim antigo é ignorada.
@@ -75,8 +75,9 @@ em capturas distintas não é idempotência nem proteção contra replay de evid
 
 Não há associação posterior de etiquetas desconhecidas: a tela informa a limitação
 antes de confirmar a captura. Provisionamento/ativação continuam online. Bytes SDM
-são opacos ao armazenamento; fixtures de preservação não autenticam SDM. Verificador
-é #5, reconciliação/integração é #6 e aceite NFC físico é #12.
+são opacos ao armazenamento; fixtures de preservação não autenticam SDM.
+O [verificador #5](sdm-validation.md) já avalia as mensagens no servidor; 503 do
+cofre mantém retry. Reconciliação/versionamento é #6 e aceite NFC físico é #12.
 
 ## Verificação local
 

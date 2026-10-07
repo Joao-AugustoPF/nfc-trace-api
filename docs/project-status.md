@@ -1,52 +1,43 @@
 # Entregas publicadas e trabalho restante
 
-Atualização de 6 de outubro de 2026, aprovada pelo mantenedor. A branch de trabalho
-nos dois repositórios é `codex/issue-4-durable-offline`.
+Atualização de 7 de outubro de 2026. Branch nos dois repositórios:
+`codex/issue-5-sdm-validation`, baseada em `codex/issue-4-durable-offline`.
+Commits/PRs separados, sem merge na main. Publicação/atualização do backlog foi
+autorizada pelo mantenedor; integração final permanece na #9.
 
 ## Software entregue
 
 | Issue | Resultado disponível |
 | --- | --- |
-| [#1](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/1) | Adaptador NFC, sessão exclusiva, leitura/gravação UID/NDEF, diagnóstico Type 4/permissões, bytes originais e perfil SDM candidato offline |
-| [#2](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/2) | Cliente/API reais, pedidos, busca, provisionamento/ativação, encerramento/nova época, cinco eventos operacionais e histórico/decisões; PROVISIONAMENTO gerado pela ativação |
-| [#3](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/3) | Autenticação, autorização, autoria verificada separada das declarações, login/restauração/revogação/logout e SecureStore no Expo |
-| [#4](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/4) | SQLite durável, cache de vínculos ativos, recuperação de reinício, fila por operador/API/época, reautenticação, envio recuperável e lote com resultado por item |
+| [#1](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/1) | Adaptador NFC, sessão exclusiva, timeout/cancelamento, bytes originais, diagnóstico Type 4 e perfil SDM candidato |
+| [#2](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/2) | Pedidos, vínculos, ativação, encerramento/nova época, seis eventos, decisões e histórico com API real |
+| [#3](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/3) | Login/permissões, autoria separada, restauração/revogação/logout e SecureStore |
+| [#4](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/4) | SQLite transacional, cache por API/operador/época, fila persistente, recuperação, lote e aba Envios |
+| [#5](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/5) | Parser/verificador SDM, vetores NXP/NIST, chaves cifradas novas por época, ativação criptográfica, reserva/contador concorrente, políticas estrita/tardia, CLI privada/rotação e captura/histórico mobile |
 
-O mantenedor aprovou as implementações para publicação. As issues acima registram
-o software concluído, com critérios físicos transferidos explicitamente para
-[#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12). Aprovação de código
-não representa teste de NFC real ou revisão independente do outro integrante.
+Critérios de software são conferidos localmente e publicados em branches/PRs.
+A aprovação do mantenedor não equivale a revisão independente nem aceite NFC
+físico. Fixtures SDM são sintéticas e identificadas. Há somente Feiju disponível.
+Personalização, proteção de escrita e mensagens NTAG 424 DNA reais são #12.
 
-Os commits são publicados na branch e oferecidos em PRs; não houve merge na main.
-A integração dos PRs e o aceite da versão exata de entrega permanecem em #9. Esta
-regra de publicação substitui a exigência antiga de aguardar merge para encerrar
-as issues de software, conforme autorização do mantenedor nesta atualização.
+## Trabalho restante e dependências
 
-## Desenvolvimento e aceite físico
+A próxima implementação disponível é **#6**, sem depender de hardware NTAG.
+As dependências concluídas #4/#5 permanecem no grafo para rastreabilidade; não
+continuam bloqueando o software. Integrar as bases de branches ao assumir.
 
-A NTAG 424 DNA não bloqueia a implementação de software. #4 está implementada;
-#5 é a próxima entrega disponível. #6 e #7 podem avançar depois dos contratos de que
-dependem, ainda sem a etiqueta. Em #8 e #9 já é possível preparar protocolo,
-análise, instalação e documentação; a coleta física e o aceite final aguardam
-o equipamento e as entregas anteriores.
-
-Os campos `Blocked by` abaixo indicam dependências para concluir o escopo
-integrado, não proibição de preparar partes independentes. Testes com vetores
-oficiais/fixtures identificadas comprovam software; não comprovam NFC físico.
-
-| Issue | Falta entregar | Dependência para concluir |
+| Issue | Falta entregar | Dependência pendente para concluir |
 | --- | --- | --- |
-| [#5](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/5) | Verificador SDM na API, referências/versões de chave por época, consumo/contadores concorrentes e políticas estrita/tardia; testes com vetores oficiais | Nenhuma issue pendente; perfil candidato versionado disponível |
-| [#6](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/6) | Reavaliação de eventos fora de ordem, decisões versionadas e histórico de pendências | #5 pendente; integrar fila #4 entregue; não depende do aceite físico #12 |
-| [#7](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/7) | Instrumentação, CSV/JSON, validação de integridade e cenários reproduzíveis | #6 |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Personalização autenticada/secure messaging, proteção reversível por chave, recuperação, perfil físico definitivo e aceite NTAG 424 DNA/UID/NDEF/SDM online/offline | #5 e hardware real; integrar fila #4 entregue; implementação administrativa pode começar agora |
-| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto, coleta controlada e análise dos três tratamentos | #7 e #12; planejamento/scripts podem começar antes |
-| [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração/reprodução final, versões identificadas, instalação limpa e material do TCC | #8 |
+| [#6](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/6) | Pendência por antecedente, decisões versionadas/append-only, projeção atual, reavaliação durável e UI de pendências | Nenhuma issue pendente; integrar fila #4/verificador #5 |
+| [#7](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/7) | Instrumentação, exportação CSV/JSON, integridade e cenários reproduzíveis | #6 |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Personalização/secure messaging, proteção reversível, recuperação física, perfil definitivo e aceite dos três tratamentos online/offline | Hardware real; implementar administração física restante; #4/#5 entregues |
+| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto/coleta controlada e análise comparativa dos três tratamentos | #7 + #12; planejamento/scripts podem avançar antes |
+| [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração/reprodução final, instalação limpa, versões e material do TCC | #8 |
 
 ```mermaid
 flowchart LR
-  O["#4 Offline"] --> R["#6 Reconciliação"]
-  S["#5 SDM na API"] --> R
+  O["#4 Offline — concluída"] --> R["#6 Reconciliação"]
+  S["#5 SDM — concluída em software"] --> R
   R --> I["#7 Instrumentação"]
   I --> E["#8 Experimentos"]
   O --> H["#12 Aceite NTAG 424 DNA"]
@@ -55,37 +46,31 @@ flowchart LR
   E --> F["#9 Entrega final"]
 ```
 
-Não criar issues menores para etapas já incluídas nessas entregas. O
-[plano #10](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/10) mantém as
-sub-issues e dependências nativas do GitHub.
+Não criar issues pequenas para etapas já agrupadas. O
+[plano #10](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/10) mantém
+sub-issues e dependências nativas. A integração na main/revisão/reprodução
+permanece na #9, sem Actions automáticos nesta etapa.
 
-O aceite de mensagens físicas, escrita protegida, contador observado e fluxo
-SDM real fica na #12. A fila #4 não autentica evidência: testes de preservação de
-bytes SDM não exigem o verificador #5. A integração entre fila, verificador e
-decisões será conferida em #6 e a reprodução física dos três tratamentos em #12.
-O perfil candidato usado em #5 deve ter versão fixa; diferenças constatadas na
-bancada exigem revisão explícita, sem alterar provisionamentos antigos.
+## Verificação atual
 
-## Verificação desta publicação
+- API: 98 testes em 9 suítes, vetores NXP/NIST e PostgreSQL real/Supertest;
+  lint/fronteiras, tipos, build e OpenAPI. Nova migration também testada em banco
+  PostgreSQL dedicado criado do zero. CLI exportação/rotação/recuperação exercitada.
+- Mobile: 228 testes em 23 suítes; SQLite real, resolução/cache SDM sem fallback,
+  bytes/época preservados, retry 503 e histórico que distingue autenticação de
+  autorização. Lint/tipos e bundle iOS local.
+- #4 já havia exercitado APK Android/Expo SQLite/SecureStore contra API real:
+  encerramento/reinício offline, reconexão e resposta perdida após commit.
+  Nesta #5 não houve novo ensaio NFC físico, instalação iOS ou build EAS.
+- Workflows somente `workflow_dispatch` e desativados remotamente. Nenhum Actions,
+  merge ou custo de compilação cloud iniciado pela entrega.
 
-- API: 76 testes em 7 suítes, PostgreSQL real/Supertest, lint com 8 verificações
-  arquiteturais, tipos, formatação, build e OpenAPI.
-- Mobile: 221 testes em 23 suítes, fila testada com SQLite real; lint, tipos e exportação local do bundle iOS.
-  O resultado completo e o ensaio nativo estão no guia 11 do Nova-tag.
-- Aceite anterior de autenticação: APK Android/SecureStore em emulador contra API
-  real, três perfis, restauração, logout, indisponibilidade e revogação.
-- Fixtures de protocolo/ponte nativa são identificadas como sintéticas. Somente a
-  Feiju está disponível; não houve aceite NTAG 424 DNA ou mensagens físicas SDM.
-- Workflows continuam somente `workflow_dispatch` e desativados no GitHub. Não
-  executar Actions, build EAS ou merge como consequência desta publicação.
+O development build iOS precisa dos módulos SQLite/rede adicionados na #4; mudanças
+#5 são JS/TS. Desinstalar remove a fila. Guias históricos mantêm datas/resultados
+de suas etapas, sem substituir este estado atual. Segredos, arquivos privados,
+contas/tokens, `.env`, `.tmp` e builds não entram no Git.
 
-Os guias históricos 05 a 09 no Nova-tag preservam os resultados de cada etapa;
-seus antigos estados de issue/branch não substituem esta situação atual. Valores
-de chave, contas privadas, tokens, `.env`, `.tmp`, builds e evidências privadas
-continuam fora do Git.
-
-A #4 requer atualizar o development build iOS pelos módulos SQLite/rede. Nenhum
-build EAS foi iniciado. Cache ativo vale até 24 horas, identidade offline precisa
-de verificação anterior/validade, e envio exige autenticação atual na API. A fila
-opera em primeiro plano, sem serviço de background. Desinstalar remove dados locais.
-Veja [sincronização e limites](offline-synchronization.md).
+Veja [SDM e chaves](sdm-validation.md), [offline](offline-synchronization.md) e
+[integração do mobile](mobile-integration.md). A #6 deve reaproveitar a reserva
+de evidência do UUID original, preservar o recibo de transporte e impedir que
+registro SDM tardio ganhe movimentação automática.

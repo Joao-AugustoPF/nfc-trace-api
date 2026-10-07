@@ -6,20 +6,29 @@ import { normalizeUid } from '../domain/values';
 import { Clock, IdGenerator, UnitOfWork } from './ports';
 import { envelopes } from './event-factory';
 import { provisioningView } from './views';
+import { SDM_PROFILE, SDM_POLICIES, SdmPolicy } from '../domain/sdm';
+import { SdmCryptography } from './sdm-ports';
 
 export class ProvisionTag {
   constructor(
     private readonly uow: UnitOfWork,
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
+    private readonly sdmCrypto?: SdmCryptography,
   ) {}
 
   async execute(
-    input: { pedidoId: string; uid: string; modelo: string; estrategia: string },
+    input: {
+      pedidoId: string;
+      uid: string;
+      modelo: string;
+      estrategia: string;
+      politicaSdm?: string;
+    },
     correlationId: string,
     actor: AuthenticatedActor | null = null,
   ) {
-    if (!['UID', 'NDEF_ESTATICO'].includes(input.estrategia)) {
+    if (!['UID', 'NDEF_ESTATICO', 'SDM'].includes(input.estrategia)) {
       throw new DomainError(
         'ESTRATEGIA_INDISPONIVEL',
         'Estratégia dinâmica ainda não disponível.',
@@ -27,6 +36,17 @@ export class ProvisionTag {
       );
     }
     const uid = normalizeUid(input.uid);
+    if (input.estrategia === 'SDM') {
+      if (!SDM_POLICIES.includes(input.politicaSdm as SdmPolicy) || uid.length !== 14)
+        throw new DomainError(
+          'SDM_CONFIGURACAO_INVALIDA',
+          'SDM exige UID de sete bytes e política explícita.',
+        );
+      if (!this.sdmCrypto)
+        throw new DomainError('SDM_CHAVES_INDISPONIVEIS', 'Cofre SDM indisponível.', 'unavailable');
+    } else if (input.politicaSdm !== undefined) {
+      throw new DomainError('SDM_CONFIGURACAO_INVALIDA', 'Política SDM exige estratégia SDM.');
+    }
     return this.uow.run(async (tx) => {
       const order = await tx.orders.get(input.pedidoId, true);
       if (!order)
@@ -60,8 +80,20 @@ export class ProvisionTag {
         tag = { id: this.ids.next(), uid, model: input.modelo.trim(), createdAt: now };
         await tx.tags.insert(tag);
       }
+      const id = this.ids.next();
+      const sdm =
+        input.estrategia === 'SDM'
+          ? {
+              profile: SDM_PROFILE,
+              policy: input.politicaSdm as SdmPolicy,
+              keyReference: this.ids.next(),
+              keyVersion: 1 as const,
+            }
+          : null;
+      const keys = sdm ? this.sdmCrypto!.generate(id, sdm) : null;
       const provisioning = Provisioning.register({
-        id: this.ids.next(),
+        id,
+        sdm,
         tagId: tag.id,
         orderId: input.pedidoId,
         strategy: input.estrategia as Strategy,
@@ -69,6 +101,7 @@ export class ProvisionTag {
         createdAt: now,
       });
       await tx.provisionings.save(provisioning);
+      if (sdm && keys) await tx.sdm.insertKeys(id, sdm, keys);
       await tx.outbox.append(
         envelopes(provisioning.pullEvents(), this.ids, now, correlationId, null, actor),
       );

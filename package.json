@@ -24,7 +24,8 @@
     "demo": "node scripts/demo.mjs",
     "format": "prettier --write src test scripts",
     "format:check": "prettier --check src test scripts",
-    "auth:bootstrap": "ts-node src/platform/access/bootstrap-cli.ts"
+    "auth:bootstrap": "ts-node src/platform/access/bootstrap-cli.ts",
+    "sdm:keys": "ts-node src/platform/access/sdm-keys-cli.ts"
   },
   "dependencies": {
     "@nestjs/common": "12.1.0",

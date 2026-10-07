@@ -232,9 +232,13 @@ export class ObservationsController {
         });
       } catch (error) {
         if (error instanceof DomainError) {
-          const status = { validation: 400, 'not-found': 404, conflict: 409, unsupported: 422 }[
-            error.kind
-          ];
+          const status = {
+            validation: 400,
+            'not-found': 404,
+            conflict: 409,
+            unsupported: 422,
+            unavailable: 503,
+          }[error.kind];
           itens.push(errorItem(status, error.code, error.message));
         } else {
           this.logger.error({

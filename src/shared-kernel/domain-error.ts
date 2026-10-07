@@ -1,4 +1,4 @@
-export type ErrorKind = 'validation' | 'not-found' | 'conflict' | 'unsupported';
+export type ErrorKind = 'validation' | 'not-found' | 'conflict' | 'unsupported' | 'unavailable';
 
 export class DomainError extends Error {
   constructor(

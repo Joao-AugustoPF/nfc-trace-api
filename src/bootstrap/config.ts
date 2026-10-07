@@ -1,4 +1,6 @@
 export interface AppConfig {
+  sdmMasterVersion?: string;
+  sdmMasterKeysJson?: string;
   databaseUrl: string;
   role: 'all' | 'api' | 'events';
   host: string;
@@ -24,6 +26,8 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (role !== 'all' && role !== 'api' && role !== 'events')
     throw new Error('Invalid APP_PROCESS_ROLE');
   return {
+    sdmMasterVersion: env.SDM_ACTIVE_MASTER_VERSION,
+    sdmMasterKeysJson: env.SDM_MASTER_KEYS_JSON,
     databaseUrl: env.DATABASE_URL,
     role,
     host: env.HOST ?? '127.0.0.1',

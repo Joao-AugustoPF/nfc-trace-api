@@ -1,13 +1,14 @@
 # NFC Trace API
 
 API experimental do TCC para rastreabilidade logística por NFC. A v1 implementa pedidos,
-provisionamento por UID ou NDEF estático, decisões sobre capturas e histórico logístico.
+provisionamento por UID, NDEF estático ou SDM, decisões sobre capturas e histórico logístico.
 É um monólito NestJS com domínio independente do framework e eventos persistidos em PostgreSQL.
 
 Esta versão exige **sessão autenticada e permissão por perfil**. A autoria verificada é
 separada do operador, aparelho e bloqueio físico declarados pelo cliente. O Nova-tag
 integra UID/NDEF e fila offline SQLite; a API recebe lotes com resultado por item.
-SDM, reconciliação e aceite físico completo permanecem nas próximas entregas.
+O SDM usa um perfil candidato versionado, chaves cifradas e políticas estrita/tardia.
+Reconciliação e aceite físico completo permanecem nas próximas entregas.
 
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
@@ -98,6 +99,7 @@ A auditoria é alimentada depois pelo dispatcher. Reenvios recuperam a decisão 
 - [Autenticação, permissões e bootstrap](docs/authentication.md)
 - [Contrato e integração do Nova-tag](docs/mobile-integration.md)
 - [Sincronização offline e contrato de lote](docs/offline-synchronization.md)
+- [SDM, épocas, políticas e administração de chaves](docs/sdm-validation.md)
 - [Operação e recuperação da outbox](docs/operations.md)
 - [Contrato OpenAPI versionado](docs/openapi.json)
 - [Entregas concluídas e trabalho restante](docs/project-status.md)

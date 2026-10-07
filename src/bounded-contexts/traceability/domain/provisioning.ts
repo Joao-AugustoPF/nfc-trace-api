@@ -2,8 +2,10 @@ import { AggregateRoot } from '../../../shared-kernel/events';
 import { DomainError } from '../../../shared-kernel/domain-error';
 import { ProvisioningStatus, Strategy } from './types';
 import { ndefReference } from './values';
+import { SDM_PROFILE, SDM_POLICIES, SdmConfiguration } from './sdm';
 
 export interface ProvisioningSnapshot {
+  sdm?: SdmConfiguration | null;
   id: string;
   tagId: string;
   orderId: string;
@@ -23,15 +25,26 @@ export class Provisioning extends AggregateRoot {
   static register(
     data: Omit<ProvisioningSnapshot, 'status' | 'activatedAt' | 'closedAt'>,
   ): Provisioning {
-    if (!['UID', 'NDEF_ESTATICO'].includes(data.strategy)) {
+    if (!['UID', 'NDEF_ESTATICO', 'SDM'].includes(data.strategy)) {
       throw new DomainError(
         'ESTRATEGIA_INDISPONIVEL',
         'SDM não está disponível nesta versão.',
         'unsupported',
       );
     }
+    if (
+      data.strategy === 'SDM'
+        ? !data.sdm ||
+          data.sdm.profile !== SDM_PROFILE ||
+          !SDM_POLICIES.includes(data.sdm.policy) ||
+          data.sdm.keyVersion !== 1
+        : !!data.sdm
+    ) {
+      throw new DomainError('SDM_CONFIGURACAO_INVALIDA', 'Configuração SDM incompatível.');
+    }
     const provisioning = new Provisioning({
       ...data,
+      ...(data.sdm ? { sdm: { ...data.sdm } } : {}),
       status: 'REGISTRADA',
       activatedAt: null,
       closedAt: null,
@@ -50,13 +63,18 @@ export class Provisioning extends AggregateRoot {
   }
 
   static restore(data: ProvisioningSnapshot): Provisioning {
-    return new Provisioning({ ...data });
+    return new Provisioning({ ...data, ...(data.sdm ? { sdm: { ...data.sdm } } : {}) });
   }
   snapshot(): ProvisioningSnapshot {
-    return { ...this.data };
+    return { ...this.data, ...(this.data.sdm ? { sdm: { ...this.data.sdm } } : {}) };
   }
 
-  activate(now: string, confirmed: boolean, writtenReference?: string): boolean {
+  activate(
+    now: string,
+    confirmed: boolean,
+    writtenReference?: string,
+    sdmVerified = false,
+  ): boolean {
     if (!confirmed)
       throw new DomainError(
         'BLOQUEIO_NAO_CONFIRMADO',
@@ -75,6 +93,11 @@ export class Provisioning extends AggregateRoot {
       throw new DomainError('VINCULO_ENCERRADO', 'O provisionamento está encerrado.', 'conflict');
     }
     if (this.data.status === 'ATIVA') return false;
+    if (this.data.strategy === 'SDM' && !sdmVerified)
+      throw new DomainError(
+        'SDM_ATIVACAO_INVALIDA',
+        'Ativação SDM exige leitura criptograficamente válida.',
+      );
     this.data.status = 'ATIVA';
     this.data.activatedAt = now;
     this.raise({
