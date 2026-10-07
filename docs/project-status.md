@@ -1,7 +1,7 @@
 # Entregas publicadas e trabalho restante
 
 Atualização de 7 de outubro de 2026. API:
-`codex/issue-9-reproducibility`, sobre `codex/issue-8-experimental-protocol`.
+`codex/issue-12-secure-messaging`, sobre `codex/issue-9-reproducibility`.
 Mobile usa `codex/issue-9-reproducibility`, sobre a instrumentação #7.
 Sem merge na main; publicação/backlog autorizados pelo mantenedor. A revisão do
 colega, integração das bases e reprodução final permanecem na #9.
@@ -34,7 +34,7 @@ validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Administração/personalização/secure messaging, proteção reversível, recuperação, perfil definitivo e aceite NTAG | Hardware real e implementação/procedimento físico restante |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Motor EV2 disponível; faltam cofre/diário/API/tela administrativos, personalização, proteção/recuperação, perfil definitivo e aceite NTAG | Hardware real e integração de código/procedimento restantes |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
@@ -146,3 +146,19 @@ Log Gradle/manifestos ficam em `.tmp/delivery`, fora do Git; pacote instalado em
 emulador, não aceite NFC. A cadeia de PRs segue aberta, sem merge ou Actions/EAS.
 Próximo trabalho independente: administração/personalização/secure messaging #12;
 NTAG física ainda é necessária para concluir o aceite e o piloto #8.
+
+## Motor de secure messaging da #12
+
+[Protocolo e sequência de integração](ntag-administration.md): AuthenticateEV2First/
+NonFirst, MAC/FULL, UID autenticado antes de mutações, permissões recuperáveis,
+ChangeKey/CRC, contador e interrupção com efeito físico desconhecido. AES-CMAC é
+compartilhado com o verificador SDM. Vetores NXP de autenticação/derivação/IV/CFS/
+ChangeKey conferidos; 20 testes novos, 146 API/14 suítes com PostgreSQL/Supertest,
+lint/8 fronteiras, tipos, formatter, build e OpenAPI sem alteração de contrato.
+
+Esta etapa é o motor de protocolo, ainda sem endpoint/tela/diário/cofre dos cinco
+slots administrativos. Não personaliza a tag pelo aplicativo. Continuar na mesma
+#12 com inventário privado, operação durável, API administrativa e transporte NFC
+real no mobile; depois executar proteção/recuperação e o aceite físico. Nenhum
+checkbox de personalização completa ou bancada foi concluído. Mobile não mudou;
+nenhum EAS, Actions ou merge iniciado.
