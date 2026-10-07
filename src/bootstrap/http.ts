@@ -118,6 +118,7 @@ export function configureHttp(app: INestApplication): void {
     exclude: [
       { path: 'health/live', method: RequestMethod.GET },
       { path: 'health/ready', method: RequestMethod.GET },
+      { path: 'health/version', method: RequestMethod.GET },
       { path: 'metrics', method: RequestMethod.GET },
     ],
   });

@@ -24,6 +24,10 @@ piloto/coleta principal e amostra final ainda dependem de hardware e dados reais
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
 
+Preparação da entrega #9: [reprodução, versões, APK candidato e backup/restauração](docs/reproduction.md).
+`npm run lab:reproduce` verifica uma instalação Docker isolada; não usa o banco da
+bancada. `/health/version` identifica o build compilado sem divulgar configuração privada.
+
 ## Iniciar com Docker
 
 Requisitos: Docker Desktop com o mecanismo Linux ativo.

@@ -8,7 +8,7 @@
     "node": ">=24.18.0 <25"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/build-metadata.cjs",
     "start": "node dist/bootstrap/main.js",
     "start:dev": "node --watch -r ts-node/register src/bootstrap/main.ts",
     "typecheck": "tsc --noEmit",
@@ -30,7 +30,10 @@
     "experiment:data": "node scripts/experiment-data.cjs",
     "experiment:replay": "node scripts/experiment-replay.cjs",
     "experiment:analysis": "node scripts/experiment-analysis.cjs",
-    "test:analysis": "node scripts/experiment-analysis-test.cjs"
+    "test:analysis": "node scripts/experiment-analysis-test.cjs",
+    "release:manifest": "node scripts/release-manifest.cjs",
+    "lab:backup": "node scripts/lab-backup.cjs",
+    "lab:reproduce": "node scripts/reproduce-lab.cjs"
   },
   "dependencies": {
     "@nestjs/common": "12.1.0",

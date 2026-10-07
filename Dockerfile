@@ -4,6 +4,9 @@ COPY package*.json ./
 RUN npm ci
 COPY tsconfig*.json ./
 COPY src ./src
+COPY scripts/build-metadata.cjs scripts/source-identity.cjs ./scripts/
+ARG BUILD_REVISION
+ENV BUILD_REVISION=$BUILD_REVISION
 RUN npm run build && npm prune --omit=dev
 
 FROM node:24.18.0-bookworm-slim

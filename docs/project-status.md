@@ -1,9 +1,8 @@
 # Entregas publicadas e trabalho restante
 
 Atualização de 7 de outubro de 2026. API:
-`codex/issue-8-experimental-protocol`, sobre `codex/issue-7-experiment-instrumentation`.
-Mobile permanece em `codex/issue-7-experiment-instrumentation`; não precisa de
-alteração para esta preparação offline de protocolo/análise.
+`codex/issue-9-reproducibility`, sobre `codex/issue-8-experimental-protocol`.
+Mobile usa `codex/issue-9-reproducibility`, sobre a instrumentação #7.
 Sem merge na main; publicação/backlog autorizados pelo mantenedor. A revisão do
 colega, integração das bases e reprodução final permanecem na #9.
 
@@ -37,7 +36,7 @@ validam software, sem substituir resultados experimentais.
 | --- | --- | --- |
 | [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Administração/personalização/secure messaging, proteção reversível, recuperação, perfil definitivo e aceite NTAG | Hardware real e implementação/procedimento físico restante |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
-| [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração/reprodução das versões finais, APK e material do TCC | #8 e aceites físicos transitivos |
+| [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
 ```mermaid
 flowchart LR
@@ -112,3 +111,25 @@ Preparação publicada em [API #18](https://github.com/Joao-AugustoPF/nfc-trace-
 sobre [#17](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/17), implementação
 `da861f1`. A branch mobile e o PR #6 permanecem iguais. #8/#9/#10/#12 continuam
 abertas, com aceite físico e integração final explicitamente pendentes.
+
+## Preparação técnica da #9
+
+[Guia de reprodução](reproduction.md), manifesto candidato API/mobile/APK/dataset,
+hashes de fonte/dependências/build carregado (`/health/version`), procedimento de
+backup privado/restauração em banco novo e matriz objetivo→software→evidência restante.
+Guia e README mobile atualizados; estados anteriores de offline/reconciliação corrigidos.
+
+Verificado localmente: 126 testes API/13 suítes (v1 populada→atual preservando
+histórico/épocas/outbox), 241 mobile/24 suítes, lint/tipos/build/formatter; APK Android
+0.3.0/3 compilado com bundle embutido, configuração/source hash conferidos.
+Reprodução Docker própria com instalação `npm ci`, cinco migrations, seed repetido,
+UID/NDEF/seis movimentos/reenvio HTTP, 10 capturas/12 movimentos, backup e restore
+de 24 tabelas com hashes idênticos e worker real retomando 34 registros de auditoria.
+Após restauração, os dez reenvios retornaram os recibos originais, sem novo efeito;
+trigger de imutabilidade e sequência de migrations também foram conferidos.
+O APK foi instalado em emulador Android e abriu o login sem Metro, sem erro fatal.
+São fixtures HTTP, zero leituras físicas. O cofre externo SDM não foi restaurado
+por esse ensaio e não está no dump. Nenhum EAS/Actions/merge iniciado.
+
+A preparação não fecha #9: colega ainda precisa reproduzir versões finais; integração
+na main não ocorreu; #12/#8 ainda exigem hardware, procedimentos e resultados.
