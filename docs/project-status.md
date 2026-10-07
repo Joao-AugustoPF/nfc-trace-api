@@ -133,3 +133,16 @@ por esse ensaio e não está no dump. Nenhum EAS/Actions/merge iniciado.
 
 A preparação não fecha #9: colega ainda precisa reproduzir versões finais; integração
 na main não ocorreu; #12/#8 ainda exigem hardware, procedimentos e resultados.
+
+## Publicação da preparação #9
+
+- [API #19](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/19), sobre [#18](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/18), implementação `6774450`.
+- [Nova-tag #7](https://github.com/brunoaiolfi/Nova-tag/pull/7), sobre [#6](https://github.com/brunoaiolfi/Nova-tag/pull/6), implementação `9474d35`.
+
+Build API e APK recompilados após esses commits, sem mudanças rastreadas; manifesto
+local confirmou fonte correspondente ao checkout e revisão embutida no APK.
+APK 0.3.0/3: SHA-256 `cdf486e69dc56f6d7fe6a451a50b7e79153c8ac20034775640b835b46797425e`.
+Log Gradle/manifestos ficam em `.tmp/delivery`, fora do Git; pacote instalado em
+emulador, não aceite NFC. A cadeia de PRs segue aberta, sem merge ou Actions/EAS.
+Próximo trabalho independente: administração/personalização/secure messaging #12;
+NTAG física ainda é necessária para concluir o aceite e o piloto #8.
