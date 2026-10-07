@@ -2,14 +2,14 @@
 
 As branches candidatas reúnem #1–#7 e preparação de protocolo/análise #8. Não há
 merge na main, piloto NTAG, revisão independente ou aceite final. API e Nova-tag
-usam `codex/issue-9-reproducibility`, sobre API #18 e mobile #6. A #9 continua
+usam `codex/issue-12-secure-messaging`, sobre API #19 e mobile #7. A #9 continua
 aberta até integração autorizada, reprodução pelo colega, #12 e resultados #8.
 
 ## Instalação em outra máquina
 
 ```powershell
-git clone --branch codex/issue-9-reproducibility https://github.com/Joao-AugustoPF/nfc-trace-api.git
-git clone --branch codex/issue-9-reproducibility https://github.com/brunoaiolfi/Nova-tag.git
+git clone --branch codex/issue-12-secure-messaging https://github.com/Joao-AugustoPF/nfc-trace-api.git
+git clone --branch codex/issue-12-secure-messaging https://github.com/brunoaiolfi/Nova-tag.git
 cd nfc-trace-api
 npm ci
 Copy-Item .env.example .env
@@ -108,6 +108,22 @@ O ensaio não valida NFC, SDM físico, cofre externo, iOS, política de disaster
 recovery em produção ou independência de outro integrante. Falhas/leases/inbox,
 poison event e retry estão nos testes reais de confiabilidade da API.
 
+### Interoperabilidade administrativa e fila mobile
+
+Depois de instalar as dependências também no checkout Nova-tag (`npm ci`), executar
+na API, ajustando o caminho do mobile:
+
+```powershell
+npm run test:nfc:mobile -- --mobile-root ..\Nova-tag
+```
+
+O [guia do ensaio](nfc-software-rehearsal.md) descreve 11 cenários integrados de
+UID/NDEF/SDM, diário SQLite, HTTP, recuperação e ativação. Usa banco/container
+próprios e PICC sintética; não depende do servidor de bancada nem de `.env`.
+Relatório conserva revisões/hashes, resultados e distinção explícita de zero
+leituras físicas/SDK não executado. Não substitui reprodução independente do
+colega, instalação no aparelho ou corpus NTAG.
+
 ## Backup/restauração de laboratório
 
 Parar **todos** os escritores (API, events, jobs administrativos). Não basta parar
@@ -167,7 +183,7 @@ física a partir do gerador de fixtures.
 | Seis eventos/épocas | casos de uso/HTTP/histórico, constraints e testes | ciclo com etiquetas/builds físicos |
 | Identidade/permissões | sessões, autoria e SecureStore | reprodução de instalação/contas pelo colega |
 | Offline/reconciliação | SQLite, lote, revisões/prazos e testes reais | coleta integrada e falhas com três tratamentos físicos |
-| SDM/proteção | verificador/cofre/contadores/políticas | secure messaging, personalização/proteção e corpus NTAG #12 |
+| SDM/proteção | verificador/cofre/contadores/políticas, EV2 e personalização recuperável API/mobile | proteção, recuperação, perfil/SDK e corpus NTAG físicos #12 |
 | Medidas/experimento | diário, exportação, protocolo/analista preliminares | piloto, amostra final, dados/results/validade #8 |
 | Reprodução/entrega | build IDs, migrar v1, backup/restore, comandos e APK candidato | versões integradas, reprodução independente, material final |
 

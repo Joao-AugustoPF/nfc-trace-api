@@ -246,3 +246,27 @@ sete migrations; este incremento não altera seu código de execução.
 Só há Feiju: zero personalizações NFC físicas nesta entrega. #12/#8/#9 permanecem
 abertas e os aceites de instalação/chip/SDK/perfil/piloto não foram substituídos
 por mocks, emulador ou vetores públicos. Sem merge, Actions ou EAS.
+
+## Ensaio conjunto de interoperabilidade da #12
+
+O [executor local](nfc-software-rehearsal.md) compila as camadas reais do Nova-tag
+e usa SessionManager/HttpTransport contra NestJS, PostgreSQL 18 isolado e SQLite
+com diário real. PICC sintética conserva chaves/arquivos/estado e responde ao EV2;
+não há ponte SDK ou rádio. O comando exige caminho explícito do checkout mobile,
+cria recursos próprios e encerra somente esses recursos. Não entra no CI hospedado.
+
+**11 cenários passaram:** ciclo UID/NDEF/SDM com instalação/conferência e ativação
+separadas, cinco capturas offline, reabertura e sincronização até ENTREGUE; perda
+de resposta HTTP e ACK da chave 0, SQLite/rede recuperados, servidor reiniciado,
+novo login, ACK SDM final perdido, ativação com resposta perdida e MAC inválido
+preservado antes de nova leitura. Conferência compara cinco slots com o alvo
+original; nenhum UUID de comando é retransmitido fisicamente. Recuperação SDM
+final só confere, sem escrita/segundo reset. Reenvio não duplica efeito/histórico.
+
+Relatório registra revisões/hashes das fontes e do executor, sete migrations e
+contagens sintéticas por cenário. `physicalReads: 0`, `nativeSdkExercised: false`,
+`nfcTimings: null`; não é dataset do experimento ou oráculo independente do chip.
+API mantém **186 testes/17 suítes**, lint/oito fronteiras e tipos verificados.
+Mobile permanece em `7a8f3bb`, sem novo build nativo; o APK candidato acima continua
+correspondendo ao checkout. PRs API #20/mobile #8 e issues #12/#8/#9 ficam abertos.
+Só Feiju disponível: bancada NTAG, piloto e reprodução final seguem pendentes.

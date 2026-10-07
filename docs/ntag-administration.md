@@ -5,7 +5,8 @@ O servidor dispõe do **motor EV2, cofre/inventário de cinco slots, inspeção 
 personalização recuperável com diário/API**. Inspeção somente consulta. Personalização
 prepara alvo por época, grava/protege e confere UID/conteúdo/configuração/chaves;
 nenhuma dessas operações ativa vínculo. Tela/transporte mobile e ativação integrada
-após novo RF ainda serão integrados. A #12 permanece aberta; somente Feiju está disponível.
+após novo RF estão disponíveis em software candidato. A #12 permanece aberta;
+somente Feiju está disponível. [Ensaio conjunto de software](nfc-software-rehearsal.md).
 
 ## Inventário privado e fronteiras
 
@@ -67,9 +68,11 @@ O servidor escolhe 21 quadros: First do slot 0, UID autenticado, configuração 
 arquivo NDEF de 256 bytes, versões 0–4, NonFirst/UID de cada slot 1–4. Todas as cinco
 chaves são efetivamente autenticadas, não apenas suas versões consultadas. Divergência
 de UID/versão/configuração, MAC inválido ou autenticação recusada encerra o canal.
-Não há endpoint para instruções/APDUs arbitrárias. A identificação de modelo/CC
-prévia no aparelho será integrada antes desta sequência; UID/chaves conhecidos não
-certificam originalidade do chip.
+Não há endpoint para instruções/APDUs arbitrárias. O mobile identifica modelo/UID
+por SELECT/GET_VERSION antes desta sequência, sem leitura pública de NDEF/CC;
+o servidor confere CC no plano protegido. Isso evita usar um diagnóstico público
+que pode falhar após proteção ou consumir evidência SDM. UID/chaves conhecidos
+não certificam originalidade do chip.
 
 Cada comando recebe identidade/sequência e intenção gravada **antes** da emissão.
 Resposta, recibo, intenção seguinte e outbox têm commit conjunto. O diário conserva
@@ -273,3 +276,8 @@ lint/tipos/matriz Expo, formatter dos arquivos alterados e bundle iOS local.
 Não houve leitura NFC física, instalação iOS, firmware, EAS, GitHub Actions ou merge.
 Builds candidatos e seus aceites continuam acompanhados na #9.
 O material final e o piloto continuam dependentes de implementação/aceite #12 e #8.
+
+O [ensaio conjunto reproduzível](nfc-software-rehearsal.md) acrescenta 11 cenários
+com classes reais do mobile, HTTP NestJS, PostgreSQL e SQLite. Inclui os três
+tratamentos com capturas offline, perda de ACK/HTTP, reinício, troca de login e
+ativação rejeitada/recuperada. Usa PICC sintética, sem SDK nativo ou leituras físicas.
