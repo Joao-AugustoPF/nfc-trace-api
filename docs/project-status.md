@@ -162,3 +162,7 @@ slots administrativos. Não personaliza a tag pelo aplicativo. Continuar na mesm
 real no mobile; depois executar proteção/recuperação e o aceite físico. Nenhum
 checkbox de personalização completa ou bancada foi concluído. Mobile não mudou;
 nenhum EAS, Actions ou merge iniciado.
+
+Motor publicado em [API #20](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/20),
+draft sobre [#19](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/19), implementação
+`e07450e`. O PR será ampliado na mesma branch conforme a integração #12 avançar.
