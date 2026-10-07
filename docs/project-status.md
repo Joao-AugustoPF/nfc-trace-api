@@ -233,7 +233,13 @@ real e adaptador/API/NFC controlados. Inclui reabertura/concorrência/rollback,
 falhas de SQLite, resposta HTTP perdida, mudança de login, RF/cancelamento tardio,
 recuperação de chave e confirmação da interface. Lint/tipos, formatter dos arquivos
 alterados e matriz Expo passaram. Bundle iOS exportado localmente; não é build ou
-instalação iOS. Candidato Android 0.4.0/4. Servidor mantém 186 testes/17 suítes e
+instalação iOS. APK Android 0.4.0/4 compilado localmente e instalado preservando
+dados no emulador: abriu login sem Metro, sem erro fatal. Fonte/revisão embutidas
+correspondem ao commit mobile `7a8f3bb`, sem mudanças rastreadas no build.
+SHA-256: `615eb322a23e3c0a1b349c43eb48dee2672f6c67b2be87d19c7ce9063d26b53e`.
+Logs/manifesto/APK ficam fora do Git. [Nova-tag #8](https://github.com/brunoaiolfi/Nova-tag/pull/8)
+é draft sobre #7; API #20 permanece draft sobre #19.
+Servidor mantém 186 testes/17 suítes e
 sete migrations; este incremento não altera seu código de execução.
 
 [Guia mobile](https://github.com/brunoaiolfi/Nova-tag/blob/codex/issue-12-secure-messaging/docs/16-administracao-ntag.md).
