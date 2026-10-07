@@ -117,7 +117,7 @@ na API, ajustando o caminho do mobile:
 npm run test:nfc:mobile -- --mobile-root ..\Nova-tag
 ```
 
-O [guia do ensaio](nfc-software-rehearsal.md) descreve 11 cenários integrados de
+O [guia do ensaio](nfc-software-rehearsal.md) descreve 13 cenários integrados de
 UID/NDEF/SDM, diário SQLite, HTTP, recuperação e ativação. Usa banco/container
 próprios e PICC sintética; não depende do servidor de bancada nem de `.env`.
 Relatório conserva revisões/hashes, resultados e distinção explícita de zero

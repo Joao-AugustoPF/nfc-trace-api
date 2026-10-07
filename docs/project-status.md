@@ -270,3 +270,29 @@ API mantém **186 testes/17 suítes**, lint/oito fronteiras e tipos verificados.
 Mobile permanece em `7a8f3bb`, sem novo build nativo; o APK candidato acima continua
 correspondendo ao checkout. PRs API #20/mobile #8 e issues #12/#8/#9 ficam abertos.
 Só Feiju disponível: bancada NTAG, piloto e reprodução final seguem pendentes.
+
+## Clareza do fluxo administrativo e troca de login
+
+Mobile `6e9083b` mantém espera/cancelamento NFC somente nos trabalhos que precisam
+da etiqueta. Consultas/recuperação HTTP e reenvio de ativação salva orientam a
+aguardar o resultado. Encerramento de plano sem configuração explica que o vínculo
+permanece REGISTRADA e exige encerramento explícito/nova época para configurar
+depois. Encerramento após conferência preserva a ativação por outra leitura.
+Troca de conta/API/login limpa os dados visuais, cancela a RF anterior e impede
+que resposta tardia restaure seu plano; a próxima consulta espera o trabalho drenar.
+O diário persistido não é apagado.
+
+**282 testes mobile/28 suítes** passaram, incluindo cinco novos casos de interface;
+lint, tipos e formatter dos arquivos alterados passaram. O ensaio conjunto passa
+a **13 cenários**: os dois novos verificam encerramento antes da ativação e plano
+sem configuração com nova época. A API também recusa ativação declarada de plano
+não conferido. São HTTP/PostgreSQL/SQLite reais e PICC sintética; zero NFC físico.
+Código de execução/API permanece igual, com os 186 testes/17 suítes anteriores.
+
+APK Android 0.4.0/4 recompilado localmente do checkout limpo `6e9083b`; bundle e
+revisão embutidos correspondem às fontes. SHA-256:
+`e1959e07d6b7f62c552c2374fdfd661bad24706be7cb77323aa552b27e02cd8e`.
+Essa revisão/hash distingue o candidato anterior com o mesmo número de versão.
+Build/manifesto ficam em `.tmp/delivery`, sem instalação iOS ou aceite NFC real.
+PRs #20 da API/#8 mobile continuam drafts sobre #19/#7, sem merge, Actions ou EAS.
+Critérios físicos da #12, piloto #8 e reprodução independente/final #9 continuam abertos.

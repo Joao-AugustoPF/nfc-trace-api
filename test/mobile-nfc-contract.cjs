@@ -441,6 +441,87 @@ async function runContract({ compiled, folder, databaseUrl, check }) {
           'SDM must not be reset twice.',
         );
       });
+    await run('verified-operation-ended-before-activation', async () => {
+      const f = await fixture('UID', 'ended-verified');
+      await f.execute();
+      await f.assertVerified();
+      const ended = await f.coordinator().end(f.operation());
+      check(
+        ended.status === 'ENCERRADA' && ended.alteracaoFisica === 'CONFERIDA',
+        'Ending a verified operation must preserve the conferred physical outcome.',
+      );
+      check(
+        (await f.sessionManager.request('/provisionamentos/' + f.link.id)).status === 'REGISTRADA',
+        'Ending administration must not activate or close the registered link.',
+      );
+      const commands = f.metrics().commands;
+      const active = await f.coordinator().activate(ended, f.link, true);
+      check(
+        active.status === 'ATIVA' &&
+          f.metrics().commands === commands &&
+          f.metrics().activationReads === 1,
+        'A separately ended verified operation must still allow one fresh activation without configuration commands.',
+      );
+    });
+    await run('unconfigured-plan-ended-and-new-epoch-prepared', async () => {
+      const f = await fixture('UID', 'ended-unconfigured');
+      const ended = await f.coordinator().end(f.operation());
+      check(
+        ended.status === 'ENCERRADA' && !ended.alteracaoEmitida && f.metrics().commands === 0,
+        'Ending an unconfigured plan must not send NFC commands.',
+      );
+      const registered = await f.sessionManager.request('/provisionamentos/' + f.link.id);
+      check(registered.status === 'REGISTRADA', 'The unconfigured link must remain registered.');
+      const preserved = await f.coordinator().prepare(registered);
+      check(
+        preserved.id === ended.id &&
+          preserved.status === 'ENCERRADA' &&
+          preserved.plano.personalizacao.referenciaAlvo ===
+            ended.plano.personalizacao.referenciaAlvo,
+        'Preparing the same link must return its ended original target, never silently reopen it.',
+      );
+      let refused = false;
+      try {
+        await f.coordinator().activate(ended, registered, true);
+      } catch (error) {
+        refused = error.code === 'ADMIN_ATIVACAO_PENDENTE';
+      }
+      check(
+        refused && f.metrics().activationReads === 0,
+        'An unconfigured ended plan cannot authorize activation.',
+      );
+      let refusedByApi = false;
+      try {
+        await f.sessionManager.request('/provisionamentos/' + registered.id + '/ativacao', {
+          method: 'POST',
+          body: { bloqueioConfirmado: true },
+        });
+      } catch (error) {
+        refusedByApi = error.code === 'NFC_PERSONALIZACAO_PENDENTE';
+      }
+      check(
+        refusedByApi,
+        'The API must refuse activation even if a caller declares physical confirmation.',
+      );
+      await new TraceabilityWorkflow(f.sessionManager).closeProvisioning(
+        registered,
+        f.owner.userId,
+      );
+      const next = await f.coordinator().register(f.order.id, f.link.uid, 'UID', 'ESTRITA');
+      const nextPlan = await f.coordinator().prepare(next);
+      check(
+        next.epoca === f.link.epoca + 1 &&
+          nextPlan.status === 'PREPARADA' &&
+          nextPlan.plano.personalizacao.referenciaAlvo !==
+            ended.plano.personalizacao.referenciaAlvo,
+        'Explicit link closure and reuse must create a new epoch/target while preserving the old plan.',
+      );
+      check(
+        (await f.coordinator().refresh(ended.id)).status === 'ENCERRADA' &&
+          f.metrics().commands === 0,
+        'Preparing a new epoch must leave the prior history intact and perform no NFC commands.',
+      );
+    });
     await run('http-reply-loss-after-key-0-commit', async () => {
       const f = await fixture('SDM', 'http-loss');
       let injected = false;

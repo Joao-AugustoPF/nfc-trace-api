@@ -52,6 +52,8 @@ checkout e Docker; não é incluído automaticamente no CI hospedado.
 | Ciclo UID | Plano/instalação/conferência, ativação por nova leitura, cinco capturas offline, reabertura/sincronização e seis eventos no histórico |
 | Ciclo NDEF estático | Mesmo ciclo com bytes do NDEF efetivamente gravado na PICC; referência do vínculo exato |
 | Ciclo SDM | Mesmo ciclo usando chaves instaladas na PICC, evidência de ativação e contadores inéditos das capturas |
+| Operação conferida encerrada antes da ativação | Vínculo segue registrado; nova leitura ativa sem retransmitir comandos de configuração |
+| Plano não configurado encerrado | Nenhuma APDU; alvo original não reabre, ativação recusada; encerramento explícito do vínculo permite nova época/plano preservando o histórico |
 | HTTP perdido após commit da chave 0 | Reenvio do mesmo recibo sem repetir a APDU/troca da chave |
 | ACK físico da chave 0 perdido | Tentativa desconhecida, escolha explícita do material, novo identificador RF e mesmo alvo |
 | Rede indisponível e SQLite reaberto | Resposta completa guardada, restauração somente HTTP e nova RF para continuar |

@@ -277,7 +277,10 @@ Não houve leitura NFC física, instalação iOS, firmware, EAS, GitHub Actions 
 Builds candidatos e seus aceites continuam acompanhados na #9.
 O material final e o piloto continuam dependentes de implementação/aceite #12 e #8.
 
-O [ensaio conjunto reproduzível](nfc-software-rehearsal.md) acrescenta 11 cenários
+O [ensaio conjunto reproduzível](nfc-software-rehearsal.md) acrescenta 13 cenários
 com classes reais do mobile, HTTP NestJS, PostgreSQL e SQLite. Inclui os três
 tratamentos com capturas offline, perda de ACK/HTTP, reinício, troca de login e
-ativação rejeitada/recuperada. Usa PICC sintética, sem SDK nativo ou leituras físicas.
+ativação rejeitada/recuperada e encerramento antes de ativar ou antes de configurar.
+Usa PICC sintética, sem SDK nativo ou leituras físicas. A interface diferencia NFC
+de HTTP, explica as consequências de encerrar e limpa o contexto visual ao trocar
+login; 282 testes mobile/28 suítes verificam a versão candidata atual.
