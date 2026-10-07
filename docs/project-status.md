@@ -78,3 +78,10 @@ Veja [reconciliação](reconciliation.md), [SDM e chaves](sdm-validation.md), [o
 [integração do mobile](mobile-integration.md). A #6 reaproveita a reserva
 de evidência do UUID original, preserva o recibo de transporte e impede que
 registro SDM tardio ganhe movimentação automática.
+
+## Publicação da reconciliação
+
+- [API #16](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/16), sobre [#15](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/15).
+- [Nova-tag #5](https://github.com/brunoaiolfi/Nova-tag/pull/5), sobre [#4](https://github.com/brunoaiolfi/Nova-tag/pull/4).
+
+Integrar na ordem das bases; main/revisão/reprodução final permanecem na #9.

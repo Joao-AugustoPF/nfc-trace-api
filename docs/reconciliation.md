@@ -105,6 +105,10 @@ em primeiro plano. Histórico também pode ser atualizado pelo botão da tela.
 
 ## Reprodução local e evidências
 
+Em uma atualização, pare os processos API e consumidores anteriores antes da
+migration; depois reinicie ambos com a nova versão. Escritores da versão anterior
+não produzem o diário de revisões. Os recibos já existentes são migrados sem edição.
+
 ```powershell
 npm run db:migrate
 npm run lint
