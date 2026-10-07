@@ -74,3 +74,12 @@ Guias: [instrumentação](experimentation.md), [reconciliação](reconciliation.
 [integração mobile](mobile-integration.md). Guias antigos preservam seu histórico,
 sem substituir este mapa. Publicações anteriores: API #16 sobre #15, Nova-tag #5
 sobre #4; integrar na ordem das bases na #9.
+
+## Publicação da instrumentação
+
+- [API #17](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/17), sobre [#16](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/16), implementação `d459a91`.
+- [Nova-tag #6](https://github.com/brunoaiolfi/Nova-tag/pull/6), sobre [#5](https://github.com/brunoaiolfi/Nova-tag/pull/5), implementação `e470e92`.
+
+#7 concluída em software. PRs continuam abertos, sem merge; #9 acompanha revisão,
+integração e reprodução final. #8 pode avançar com protocolo e análise de controles;
+#12 ainda precisa da administração/aceite físico NTAG 424 DNA.
