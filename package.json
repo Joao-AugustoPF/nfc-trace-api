@@ -26,11 +26,13 @@
     "format:check": "prettier --check src test scripts",
     "auth:bootstrap": "ts-node src/platform/access/bootstrap-cli.ts",
     "sdm:keys": "ts-node src/platform/access/sdm-keys-cli.ts",
+    "nfc:inventory": "ts-node src/platform/access/nfc-inventory-cli.ts",
     "experiment:scenarios": "node scripts/experiment-scenarios.cjs",
     "experiment:data": "node scripts/experiment-data.cjs",
     "experiment:replay": "node scripts/experiment-replay.cjs",
     "experiment:analysis": "node scripts/experiment-analysis.cjs",
     "test:analysis": "node scripts/experiment-analysis-test.cjs",
+    "test:nfc:mobile": "node scripts/mobile-nfc-contract.cjs",
     "release:manifest": "node scripts/release-manifest.cjs",
     "lab:backup": "node scripts/lab-backup.cjs",
     "lab:reproduce": "node scripts/reproduce-lab.cjs"

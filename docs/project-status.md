@@ -1,8 +1,8 @@
 # Entregas publicadas e trabalho restante
 
 Atualização de 7 de outubro de 2026. API:
-`codex/issue-9-reproducibility`, sobre `codex/issue-8-experimental-protocol`.
-Mobile usa `codex/issue-9-reproducibility`, sobre a instrumentação #7.
+`codex/issue-12-secure-messaging`, sobre `codex/issue-9-reproducibility`.
+Mobile usa `codex/issue-12-secure-messaging`, sobre `codex/issue-9-reproducibility`.
 Sem merge na main; publicação/backlog autorizados pelo mantenedor. A revisão do
 colega, integração das bases e reprodução final permanecem na #9.
 
@@ -34,7 +34,7 @@ validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Administração/personalização/secure messaging, proteção reversível, recuperação, perfil definitivo e aceite NTAG | Hardware real e implementação/procedimento físico restante |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | API e mobile candidatos: personalização UID/NDEF/SDM, alvo por época, transporte durável, recuperação e ativação em nova RF disponíveis; faltam procedimento/perfil definitivo e aceite NTAG | Bancada no hardware real e reprodução pelo colega |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
@@ -146,3 +146,153 @@ Log Gradle/manifestos ficam em `.tmp/delivery`, fora do Git; pacote instalado em
 emulador, não aceite NFC. A cadeia de PRs segue aberta, sem merge ou Actions/EAS.
 Próximo trabalho independente: administração/personalização/secure messaging #12;
 NTAG física ainda é necessária para concluir o aceite e o piloto #8.
+
+## Motor de secure messaging da #12
+
+[Protocolo e sequência de integração](ntag-administration.md): AuthenticateEV2First/
+NonFirst, MAC/FULL, UID autenticado antes de mutações, permissões recuperáveis,
+ChangeKey/CRC, contador e interrupção com efeito físico desconhecido. AES-CMAC é
+compartilhado com o verificador SDM. Vetores NXP de autenticação/derivação/IV/CFS/
+ChangeKey conferidos; 20 testes novos, 146 API/14 suítes com PostgreSQL/Supertest,
+lint/8 fronteiras, tipos, formatter, build e OpenAPI sem alteração de contrato.
+
+O primeiro incremento foi o motor de protocolo, ainda sem endpoint/tela/diário/cofre
+naquela ocasião. Inventário, diário e API de inspeção foram acrescentados no incremento
+abaixo; o trabalho restante atual está na tabela. Nenhum checkbox de personalização
+completa ou bancada foi concluído. Mobile não mudou; nenhum EAS, Actions ou merge iniciado.
+
+Motor publicado em [API #20](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/20),
+draft sobre [#19](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/19), implementação
+`e07450e`. O PR será ampliado na mesma branch conforme a integração #12 avançar.
+
+## Inventário e inspeção administrativa da #12
+
+No mesmo PR #20/branch: contexto `tag-administration`, cofre AES-GCM dos cinco slots,
+importação CLI privada/auditada, plano imutável por vínculo/UID/época, inspeção EV2
+autenticando todas as chaves e consultando versões/configurações. API ADMINISTRADOR
+com lease/sessão RF, recuperação explícita, diário paginado e checkpoint idempotente.
+Sexta migration; seis tabelas novas. Intenção precede emissão, resposta/recibo/comando
+seguinte/outbox são atômicos; rollback/reinício descarta canal. Conta/sessão são
+revalidadas no banco. Mestras permanecem externas e wrappers anteriores preservados.
+
+Inspeção não grava nem instala chaves; resultado explicita `personalizada:false` e
+vínculo permanece REGISTRADA. Somente Feiju disponível, sem teste físico ou alteração
+mobile naquele incremento. Material alvo/plano protegido e recuperação de escrita
+parcial estão descritos abaixo. Checkboxes de personalização/aceite da #12
+continuam abertos, assim como #8/#9. Ver [contrato/procedimento](ntag-administration.md).
+
+Validação local: **166 testes/16 suítes**, PostgreSQL real/Supertest; 17 integrações
+novas de inventário/inspeção e três testes de cofre/parser. Incluem CLI real com ACL
+Windows (remoção de permissão explícita de terceiros), cinco slots/UID/versões,
+reenvio/concorrência, reinício/lease, cancelamento após novo login, revogação,
+vínculo encerrado, imutabilidade, rollback de intenção/resposta/canal e schemas
+OpenAPI de autenticação/inspeção distintos. Lint/oito
+fronteiras, tipos, formatter, build e OpenAPI passaram. Endpoints administrativos
+de inspeção documentados; não há endpoint de APDU arbitrária ou chave bruta.
+
+## Personalização recuperável no servidor da #12
+
+Mesmo PR #20/branch: alvo privado imutável dos cinco slots por provisionamento/época;
+slots 1/2 SDM usam o material já emitido para a época; demais slots gerados no servidor.
+Plano UID/NDEF/SDM com proteção temporária, CC, NLEN zero, gravação em trechos de 80
+bytes e conferência FULL. Troca de slot 0 por último, nova autenticação, conferência
+de todos os slots/versões e configuração final. Nenhuma ativação por ACK.
+
+Sétima migration: alvo por época, wrappers append-only e checkpoints de alteração
+física/prova de conteúdo. API registra intenção antes de emitir mutações; resultado
+fica NAO_CONFIRMADA até concluir. Recuperação conserva alvo e exige escolha explícita
+ATUAL/ALVO por slot. SDM já aplicado com prova persistida só é conferido, sem reset;
+época com evidência não pode receber nova mutação. Vínculo/operação com alteração
+pendente não podem ser encerrados, nem ativados. CLI rewrap preserva referências,
+histórico/material físico e produz outbox na mesma transação.
+
+Validação local: **186 testes/17 suítes**, PostgreSQL/Supertest, incluindo 20 testes
+novos de personalização com PICC sintética: três tratamentos, perda de ACK de escrita,
+troca de chave e perfil SDM, reinício, reenvio HTTP, escolha de material, ausência de
+prova, contador já reservado, concorrência/alvo único e rollback/outbox/cofre.
+Lint/oito fronteiras, tipos, formatter, build/OpenAPI e reprodução local são verificados
+antes da publicação. Fixtures não cumprem os checkboxes físicos da #12.
+
+Naquele incremento somente o servidor mudou. A integração mobile está descrita
+abaixo. NTAG real, proteção/recuperação físicas e perfil final permanecem pendentes;
+nenhum Actions, EAS ou merge. #12/#8/#9 continuam abertas.
+
+## Integração administrativa candidata no Nova-tag
+
+Mobile `7a8f3bb` na mesma branch #12, sobre preparação #9: tela ADMINISTRADOR com
+pedido/identificação automática, tratamento/política selecionáveis, confirmação do
+plano e progresso persistente. Diário SQLite separado: tentativa confirmada antes
+do NFC, resposta completa salva antes do HTTP, recibo/próximo comando atômicos.
+Timeout de rede não retransmite APDU. Recuperação HTTP do diário, outra RF com
+escolha explícita dos cinco slots, cancelamento/background/blur e resposta tardia.
+Ativação por nova leitura, evidência/recibo recuperáveis e encerramento administrativo.
+Gerenciar oferece retomada do vínculo NTAG. Feiju conserva o fluxo simples.
+
+Validação mobile: **277 testes/28 suítes**, 36 novos casos administrativos, SQLite
+real e adaptador/API/NFC controlados. Inclui reabertura/concorrência/rollback,
+falhas de SQLite, resposta HTTP perdida, mudança de login, RF/cancelamento tardio,
+recuperação de chave e confirmação da interface. Lint/tipos, formatter dos arquivos
+alterados e matriz Expo passaram. Bundle iOS exportado localmente; não é build ou
+instalação iOS. APK Android 0.4.0/4 compilado localmente e instalado preservando
+dados no emulador: abriu login sem Metro, sem erro fatal. Fonte/revisão embutidas
+correspondem ao commit mobile `7a8f3bb`, sem mudanças rastreadas no build.
+SHA-256: `615eb322a23e3c0a1b349c43eb48dee2672f6c67b2be87d19c7ce9063d26b53e`.
+Logs/manifesto/APK ficam fora do Git. [Nova-tag #8](https://github.com/brunoaiolfi/Nova-tag/pull/8)
+é draft sobre #7; API #20 permanece draft sobre #19.
+Servidor mantém 186 testes/17 suítes e
+sete migrations; este incremento não altera seu código de execução.
+
+[Guia mobile](https://github.com/brunoaiolfi/Nova-tag/blob/codex/issue-12-secure-messaging/docs/16-administracao-ntag.md).
+Só há Feiju: zero personalizações NFC físicas nesta entrega. #12/#8/#9 permanecem
+abertas e os aceites de instalação/chip/SDK/perfil/piloto não foram substituídos
+por mocks, emulador ou vetores públicos. Sem merge, Actions ou EAS.
+
+## Ensaio conjunto de interoperabilidade da #12
+
+O [executor local](nfc-software-rehearsal.md) compila as camadas reais do Nova-tag
+e usa SessionManager/HttpTransport contra NestJS, PostgreSQL 18 isolado e SQLite
+com diário real. PICC sintética conserva chaves/arquivos/estado e responde ao EV2;
+não há ponte SDK ou rádio. O comando exige caminho explícito do checkout mobile,
+cria recursos próprios e encerra somente esses recursos. Não entra no CI hospedado.
+
+**11 cenários passaram:** ciclo UID/NDEF/SDM com instalação/conferência e ativação
+separadas, cinco capturas offline, reabertura e sincronização até ENTREGUE; perda
+de resposta HTTP e ACK da chave 0, SQLite/rede recuperados, servidor reiniciado,
+novo login, ACK SDM final perdido, ativação com resposta perdida e MAC inválido
+preservado antes de nova leitura. Conferência compara cinco slots com o alvo
+original; nenhum UUID de comando é retransmitido fisicamente. Recuperação SDM
+final só confere, sem escrita/segundo reset. Reenvio não duplica efeito/histórico.
+
+Relatório registra revisões/hashes das fontes e do executor, sete migrations e
+contagens sintéticas por cenário. `physicalReads: 0`, `nativeSdkExercised: false`,
+`nfcTimings: null`; não é dataset do experimento ou oráculo independente do chip.
+API mantém **186 testes/17 suítes**, lint/oito fronteiras e tipos verificados.
+Mobile permanece em `7a8f3bb`, sem novo build nativo; o APK candidato acima continua
+correspondendo ao checkout. PRs API #20/mobile #8 e issues #12/#8/#9 ficam abertos.
+Só Feiju disponível: bancada NTAG, piloto e reprodução final seguem pendentes.
+
+## Clareza do fluxo administrativo e troca de login
+
+Mobile `6e9083b` mantém espera/cancelamento NFC somente nos trabalhos que precisam
+da etiqueta. Consultas/recuperação HTTP e reenvio de ativação salva orientam a
+aguardar o resultado. Encerramento de plano sem configuração explica que o vínculo
+permanece REGISTRADA e exige encerramento explícito/nova época para configurar
+depois. Encerramento após conferência preserva a ativação por outra leitura.
+Troca de conta/API/login limpa os dados visuais, cancela a RF anterior e impede
+que resposta tardia restaure seu plano; a próxima consulta espera o trabalho drenar.
+O diário persistido não é apagado.
+
+**282 testes mobile/28 suítes** passaram, incluindo cinco novos casos de interface;
+lint, tipos e formatter dos arquivos alterados passaram. O ensaio conjunto passa
+a **13 cenários**: os dois novos verificam encerramento antes da ativação e plano
+sem configuração com nova época. A API também recusa ativação declarada de plano
+não conferido. São HTTP/PostgreSQL/SQLite reais e PICC sintética; zero NFC físico.
+Código de execução/API permanece igual, com os 186 testes/17 suítes anteriores.
+
+APK Android 0.4.0/4 recompilado localmente do checkout limpo `6e9083b`; bundle e
+revisão embutidos correspondem às fontes. SHA-256:
+`e1959e07d6b7f62c552c2374fdfd661bad24706be7cb77323aa552b27e02cd8e`.
+Essa revisão/hash distingue o candidato anterior com o mesmo número de versão.
+Build/manifesto ficam em `.tmp/delivery`, sem instalação iOS ou aceite NFC real.
+PRs #20 da API/#8 mobile continuam drafts sobre #19/#7, sem merge, Actions ou EAS.
+Critérios físicos da #12, piloto #8 e reprodução independente/final #9 continuam abertos.

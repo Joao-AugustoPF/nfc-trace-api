@@ -41,6 +41,24 @@ import { NodeSdmCryptography } from '../bounded-contexts/traceability/infrastruc
 import { captureAuthorization } from '../platform/access/capture-authorization';
 import { ReconciliationConsumer } from '../platform/messaging/reconciliation-consumer';
 import { ReconcileObservations } from '../bounded-contexts/traceability/application/reconcile-observations';
+import { NfcAdministration } from '../bounded-contexts/tag-administration/application/administration-service';
+import { NodeCredentialVault } from '../bounded-contexts/tag-administration/infrastructure/credential-vault';
+import { Ev2AdministrationGateway } from '../bounded-contexts/tag-administration/infrastructure/ev2-personalization-gateway';
+import { NodeTargetGenerator } from '../bounded-contexts/tag-administration/infrastructure/target-generator';
+import { nfcLifecycleGate } from '../platform/access/nfc-lifecycle-gate';
+import { PostgresAdministrationStore } from '../bounded-contexts/tag-administration/infrastructure/postgres-administration-store';
+import { NfcAdministrationController } from '../bounded-contexts/tag-administration/presentation/http/controller';
+
+class NfcAdministrationLifecycle implements OnApplicationShutdown {
+  constructor(
+    private readonly gateway: Ev2AdministrationGateway,
+    private readonly vault: NodeCredentialVault,
+  ) {}
+  onApplicationShutdown(): void {
+    this.gateway.closeAll();
+    this.vault.close();
+  }
+}
 
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(
@@ -55,11 +73,16 @@ class DatabaseLifecycle implements OnApplicationShutdown {
 @Module({})
 export class AppModule {
   static register(config: AppConfig, source: DataSource, ownsSource = true): DynamicModule {
-    const uow = new TypeOrmUnitOfWork(source, captureAuthorization);
+    const uow = new TypeOrmUnitOfWork(source, captureAuthorization, nfcLifecycleGate);
     const clock = new SystemClock();
     const timing = new NodeMonotonicClock();
     const ids = new NodeIds();
     const sdm = new NodeSdmCryptography(config.sdmMasterVersion, config.sdmMasterKeysJson);
+    const nfcVault = new NodeCredentialVault(config.sdmMasterVersion, config.sdmMasterKeysJson);
+    const nfcGateway = new Ev2AdministrationGateway(nfcVault);
+    const nfcTargets = new NodeTargetGenerator(nfcVault, (id, target) =>
+      sdm.unseal(id, target, target.sealed),
+    );
     const identity = new PostgresIdentityStore(source);
     const passwords = new ScryptPasswords();
     const tokens = new OpaqueTokens();
@@ -89,8 +112,26 @@ export class AppModule {
               AuthenticationController,
               UsersController,
               ExperimentsController,
+              NfcAdministrationController,
             ],
       providers: [
+        {
+          provide: NfcAdministration,
+          useFactory: () =>
+            new NfcAdministration(
+              new PostgresAdministrationStore(source),
+              nfcGateway,
+              clock,
+              ids,
+              new Sha256Fingerprint(),
+              180,
+              nfcTargets,
+            ),
+        },
+        {
+          provide: NfcAdministrationLifecycle,
+          useFactory: () => new NfcAdministrationLifecycle(nfcGateway, nfcVault),
+        },
         {
           provide: ExperimentService,
           useFactory: () =>

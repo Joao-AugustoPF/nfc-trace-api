@@ -63,6 +63,7 @@ export interface OutboxWriter {
 }
 
 export interface Transaction {
+  administration: { assertLifecycle(id: string, action: 'ATIVAR' | 'ENCERRAR'): Promise<void> };
   measurements: MeasurementWriter;
   authorization: CaptureAuthorization;
   decisions: DecisionRepository;

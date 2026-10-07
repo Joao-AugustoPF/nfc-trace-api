@@ -124,7 +124,7 @@ describe('Populated v1 migration to current schema', () => {
       status: 'AUTORIZADA',
       evaluatedAt: now,
     });
-    expect((await source.query('SELECT count(*)::int AS n FROM migrations'))[0].n).toBe(5);
+    expect((await source.query('SELECT count(*)::int AS n FROM migrations'))[0].n).toBe(7);
     await expect(
       source.query('UPDATE observations SET fingerprint=$1', ['0'.repeat(64)]),
     ).rejects.toThrow('append-only');

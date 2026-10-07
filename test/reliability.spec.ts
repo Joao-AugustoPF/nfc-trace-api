@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { DataSource } from 'typeorm';
+import { nfcLifecycleGate } from '../src/platform/access/nfc-lifecycle-gate';
 import { CreateOrder } from '../src/bounded-contexts/traceability/application/create-order';
 import { ProvisionTag } from '../src/bounded-contexts/traceability/application/provision-tag';
 import { ActivateProvisioning } from '../src/bounded-contexts/traceability/application/change-provisioning';
@@ -133,7 +134,7 @@ describe('Transactional state and reliable event delivery', () => {
     expect(await source.query("SELECT * FROM outbox WHERE status <> 'PROCESSED'")).toHaveLength(0);
   });
   it('rolls back order, observation, decision and movement if outbox persistence fails', async () => {
-    const uow = new TypeOrmUnitOfWork(source);
+    const uow = new TypeOrmUnitOfWork(source, undefined, nfcLifecycleGate);
     const order = await create();
     const tag = await new ProvisionTag(uow, clock, ids).execute(
       { pedidoId: order.id, uid: '04AABBCCDDEE01', modelo: 'NTAG424DNA', estrategia: 'UID' },

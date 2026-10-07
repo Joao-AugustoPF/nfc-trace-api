@@ -28,6 +28,11 @@ Preparação da entrega #9: [reprodução, versões, APK candidato e backup/rest
 `npm run lab:reproduce` verifica uma instalação Docker isolada; não usa o banco da
 bancada. `/health/version` identifica o build compilado sem divulgar configuração privada.
 
+Administração #12 candidata: [EV2, cofre e personalização recuperável](docs/ntag-administration.md).
+O servidor prepara e executa planos protegidos UID/NDEF/SDM com alvo por época,
+conferência e diário durável. O mobile integra tela administrativa, transporte durável,
+recuperação e ativação por nova leitura. O aceite NTAG real permanece pendente.
+
 ## Iniciar com Docker
 
 Requisitos: Docker Desktop com o mecanismo Linux ativo.
@@ -86,6 +91,17 @@ O banco de integração padrão é `nfc_trace_test`, criado pelo Compose. Para o
 defina `TEST_DATABASE_URL` no ambiente; o nome precisa terminar em `_test`.
 Os testes limpam **somente esse banco de teste** a cada cenário.
 
+Com as dependências do Nova-tag também instaladas, o [ensaio conjunto de software](docs/nfc-software-rehearsal.md)
+verifica os três tratamentos e recuperação entre código mobile/API reais:
+
+```powershell
+npm run test:nfc:mobile -- --mobile-root C:\src\Nova-tag-expo
+```
+
+Cria PostgreSQL isolado, API em loopback e diários SQLite; usa PICC sintética,
+sem executar SDK/NFC ou acessar dados do laboratório. É separado da suíte padrão
+e do CI hospedado. O relatório distingue explicitamente software e aceite físico.
+
 Jest 30 usa `--experimental-vm-modules` para carregar os pacotes ESM do NestJS 12 a partir
 dos testes CommonJS. O aviso experimental do Node é esperado.
 
@@ -131,9 +147,10 @@ A API recebe a referência NDEF já decodificada pelo aplicativo. Os bytes origi
 ser enviados separadamente em Base64. UID e NDEF estático identificam cadastros, mas não
 autenticam criptograficamente a etiqueta, o operador ou a movimentação física.
 
-O Nova-tag Expo (`codex/issue-6-event-reconciliation`) integra login/SecureStore,
+O Nova-tag Expo (`codex/issue-12-secure-messaging`) integra login/SecureStore,
 cadastro/busca de pedidos, UID/NDEF, provisionamento em duas etapas, encerramento,
-reutilização, eventos, histórico, fila durável e acompanhamento de decisões com a API real. Essas alterações
+reutilização, eventos, histórico, fila durável, acompanhamento de decisões e administração
+NTAG candidata com a API real. Essas alterações
 ainda estão em branch separada da main do mobile. As entregas de software #1/#2/#3
 foram aprovadas; personalização/proteção e aceite físico estão concentrados na #12.
 Testes de sessão não validam hardware NFC.

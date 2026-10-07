@@ -154,7 +154,7 @@ async function main() {
   assert.equal(runtime.status, 'BUILD_IDENTIFICADO');
   assert.equal(runtime.sourceSha256, identity(root, 'api').sourceSha256);
   const migrations = pg.sql('nfc_reproduction_test', 'SELECT count(*) FROM migrations');
-  assert.equal(migrations, '5');
+  assert.equal(migrations, '7');
   await call('/autenticacao/logout', {});
   // Stop every writer (api only role; no events process was started).
   docker(['stop', 'api']);

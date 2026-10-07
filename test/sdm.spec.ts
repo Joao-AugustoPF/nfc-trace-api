@@ -23,6 +23,7 @@ import { OutboxDispatcher } from '../src/platform/messaging/outbox-dispatcher';
 import { AuditConsumer } from '../src/platform/audit/audit-consumer';
 import { testDatabase, resetDatabase, seedIdentity } from './support';
 import { syntheticSdmReading } from './sdm-fixtures';
+import { nfcLifecycleGate } from '../src/platform/access/nfc-lifecycle-gate';
 import { EventType } from '../src/bounded-contexts/traceability/domain/types';
 
 const uid = '04AABBCCDDEE01';
@@ -120,7 +121,7 @@ describe('SDM synthetic contract with real PostgreSQL and HTTP (no physical acce
     )[0].maximum as number;
   const breakingUow = (): UnitOfWork => ({
     run: (work) =>
-      new TypeOrmUnitOfWork(source).run((tx) =>
+      new TypeOrmUnitOfWork(source, undefined, nfcLifecycleGate).run((tx) =>
         work({
           ...tx,
           outbox: {
@@ -558,11 +559,12 @@ describe('SDM synthetic contract with real PostgreSQL and HTTP (no physical acce
       )[0].sealed as SealedSdmKeys;
       const recovered = new NodeSdmCryptography('2', JSON.stringify({ '2': nextMaster }));
       expect(recovered.unseal(p.id, p.sdm, sealed).equals(original)).toBe(true);
-      await new ActivateProvisioning(new TypeOrmUnitOfWork(source), clock, ids, recovered).execute(
-        p.id,
-        { bloqueioConfirmado: true, leituraSdm: reading(p, 1) },
-        'recovered',
-      );
+      await new ActivateProvisioning(
+        new TypeOrmUnitOfWork(source, undefined, nfcLifecycleGate),
+        clock,
+        ids,
+        recovered,
+      ).execute(p.id, { bloqueioConfirmado: true, leituraSdm: reading(p, 1) }, 'recovered');
       expect(await maximum(p)).toBe(1);
       await new OutboxDispatcher(source, [new AuditConsumer()], {
         batchSize: 25,
