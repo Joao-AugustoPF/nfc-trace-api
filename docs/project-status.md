@@ -107,3 +107,8 @@ integração e reprodução final. #8 tem protocolo/análise preliminares implem
 Partes independentes seguintes: reprodução/material técnico #9 e administração NFC
 #12. Piloto real/protocolo final/amostra/coleta da #8 continuam pendentes; o piloto
 preliminar não fornece inferência ou resultado comparativo do TCC.
+
+Preparação publicada em [API #18](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/18),
+sobre [#17](https://github.com/Joao-AugustoPF/nfc-trace-api/pull/17), implementação
+`da861f1`. A branch mobile e o PR #6 permanecem iguais. #8/#9/#10/#12 continuam
+abertas, com aceite físico e integração final explicitamente pendentes.
