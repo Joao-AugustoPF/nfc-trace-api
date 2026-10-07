@@ -233,19 +233,20 @@ não são modificados. Isso é limpeza em memória por melhor esforço, não mem
 protegida nem garantia de apagamento de todas as cópias internas do runtime/OpenSSL.
 O chamador deve fechar o canal em cancelamento/expiração/falha de transporte.
 
-## Próxima integração da mesma #12
+## Integração candidata no Nova-tag da mesma #12
 
 A decisão arquitetural é manter criptografia e material privado no servidor.
-O mobile será transporte APDU em uma sessão administrativa separada, usando sua
-ponte NFC real. Próximas partes **ainda devem ser implementadas**, na ordem:
+O mobile transporta APDU em uma sessão administrativa separada, usando sua
+ponte NFC real. Software candidato em `codex/issue-12-secure-messaging`, sobre a
+preparação #9; [guia de configuração/recuperação](https://github.com/brunoaiolfi/Nova-tag/blob/codex/issue-12-secure-messaging/docs/16-administracao-ntag.md):
 
-1. Tela de bancada isolada no Nova-tag: identificação compatível antes de comando
+1. Tela de bancada isolada no Nova-tag implementada: identificação compatível antes de comando
    específico, sessão NFC exclusiva, progresso persistente, confirmação de plano,
    cancelamento e recuperação. A Feiju continua incompatível com este protocolo.
-2. Transporte durável por comando: antes de transmitir, registrar localmente que
+2. Transporte durável por comando implementado: antes de transmitir, registrar localmente que
    houve tentativa. Reenviar somente a resposta HTTP preservada; nunca retransmitir
    APDU por timeout de rede. Recuperação com seleção dos slots e novo RF.
-3. Nova sessão RF para leitura dinâmica e ativação existente, sem reset automático
+3. Nova sessão RF para leitura dinâmica e ativação existente implementada, sem reset automático
    ou ativação apenas pelo ACK. Reconfiguração de época ATIVA exige encerramento/nova
    época; recuperação parcial de uma operação pendente deve conservar seu alvo.
 
@@ -266,7 +267,9 @@ gravação/troca de chaves, ACK perdido, SDM sem reset, provas ausentes, concorr
 reenvio, reinício, cofre e rollback transacional. A suíte completa e
 verificações finais estão registradas no [mapa de entregas](project-status.md).
 
-Houve personalização apenas contra PICC sintética. Não houve leitura NFC física,
-tela mobile nova, firmware, EAS,
-GitHub Actions ou merge. Builds móveis e seus aceites anteriores permanecem na #9.
+Houve personalização apenas contra PICC sintética. A tela/transporte mobile têm
+277 testes locais/28 suítes, incluindo SQLite real e adaptador/API/NFC controlados,
+lint/tipos/matriz Expo, formatter dos arquivos alterados e bundle iOS local.
+Não houve leitura NFC física, instalação iOS, firmware, EAS, GitHub Actions ou merge.
+Builds candidatos e seus aceites continuam acompanhados na #9.
 O material final e o piloto continuam dependentes de implementação/aceite #12 e #8.

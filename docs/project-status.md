@@ -2,7 +2,7 @@
 
 Atualização de 7 de outubro de 2026. API:
 `codex/issue-12-secure-messaging`, sobre `codex/issue-9-reproducibility`.
-Mobile usa `codex/issue-9-reproducibility`, sobre a instrumentação #7.
+Mobile usa `codex/issue-12-secure-messaging`, sobre `codex/issue-9-reproducibility`.
 Sem merge na main; publicação/backlog autorizados pelo mantenedor. A revisão do
 colega, integração das bases e reprodução final permanecem na #9.
 
@@ -34,7 +34,7 @@ validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
-| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | API de inspeção/personalização UID/NDEF/SDM, alvo por época, recuperação parcial e rotação do cofre disponíveis; faltam tela/transporte mobile, ativação integrada em novo RF, perfil definitivo e aceite NTAG | Integração mobile/procedimento restantes e hardware real |
+| [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | API e mobile candidatos: personalização UID/NDEF/SDM, alvo por época, transporte durável, recuperação e ativação em nova RF disponíveis; faltam procedimento/perfil definitivo e aceite NTAG | Bancada no hardware real e reprodução pelo colega |
 | [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração autorizada, reprodução pelo colega, APK/builds/perfil/corpus definitivos e material final; preparação técnica disponível | #8 e aceites físicos transitivos |
 
@@ -213,6 +213,30 @@ prova, contador já reservado, concorrência/alvo único e rollback/outbox/cofre
 Lint/oito fronteiras, tipos, formatter, build/OpenAPI e reprodução local são verificados
 antes da publicação. Fixtures não cumprem os checkboxes físicos da #12.
 
-Ainda falta integrar tela/transporte no Nova-tag e ativação após outra sessão RF,
-além de NTAG real, proteção/recuperação físicas e perfil final. Mobile não mudou;
+Naquele incremento somente o servidor mudou. A integração mobile está descrita
+abaixo. NTAG real, proteção/recuperação físicas e perfil final permanecem pendentes;
 nenhum Actions, EAS ou merge. #12/#8/#9 continuam abertas.
+
+## Integração administrativa candidata no Nova-tag
+
+Mobile `7a8f3bb` na mesma branch #12, sobre preparação #9: tela ADMINISTRADOR com
+pedido/identificação automática, tratamento/política selecionáveis, confirmação do
+plano e progresso persistente. Diário SQLite separado: tentativa confirmada antes
+do NFC, resposta completa salva antes do HTTP, recibo/próximo comando atômicos.
+Timeout de rede não retransmite APDU. Recuperação HTTP do diário, outra RF com
+escolha explícita dos cinco slots, cancelamento/background/blur e resposta tardia.
+Ativação por nova leitura, evidência/recibo recuperáveis e encerramento administrativo.
+Gerenciar oferece retomada do vínculo NTAG. Feiju conserva o fluxo simples.
+
+Validação mobile: **277 testes/28 suítes**, 36 novos casos administrativos, SQLite
+real e adaptador/API/NFC controlados. Inclui reabertura/concorrência/rollback,
+falhas de SQLite, resposta HTTP perdida, mudança de login, RF/cancelamento tardio,
+recuperação de chave e confirmação da interface. Lint/tipos, formatter dos arquivos
+alterados e matriz Expo passaram. Bundle iOS exportado localmente; não é build ou
+instalação iOS. Candidato Android 0.4.0/4. Servidor mantém 186 testes/17 suítes e
+sete migrations; este incremento não altera seu código de execução.
+
+[Guia mobile](https://github.com/brunoaiolfi/Nova-tag/blob/codex/issue-12-secure-messaging/docs/16-administracao-ntag.md).
+Só há Feiju: zero personalizações NFC físicas nesta entrega. #12/#8/#9 permanecem
+abertas e os aceites de instalação/chip/SDK/perfil/piloto não foram substituídos
+por mocks, emulador ou vetores públicos. Sem merge, Actions ou EAS.
