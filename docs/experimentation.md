@@ -174,8 +174,11 @@ de etiqueta/aparelho/sessão/tentativa para análise por clusters em #8.
   usa T0 comum e máximo dos finais elegíveis; incompleto/reiniciado tem null.
   Sem população elegível, uma razão retorna null, não zero.
 
-Essas são estatísticas descritivas e controles de integridade. Não tratar taps do
-mesmo telefone/etiqueta como amostras independentes; inferência e intervalos ficam #8.
+Essas são estatísticas descritivas e controles de integridade. A preparação da #8
+acrescenta [protocolo e análise offline](../experiments/README.md), mantendo cenários
+separados, sessões/etiquetas e intervalos exploratórios condicionais. Não tratar taps
+do mesmo telefone/etiqueta como amostras independentes. Piloto/coleta física e
+protocolo/amostra definitivos continuam pendentes.
 
 ## Cenários reproduzíveis e reexecução
 

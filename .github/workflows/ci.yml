@@ -34,3 +34,9 @@ jobs:
       - run: npm run build
       - run: npm run openapi
       - run: git diff --exit-code -- docs/openapi.json
+      # This workflow remains manual; no push/PR trigger or cloud run is introduced.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r experiments/requirements.lock.txt
+      - run: npm run test:analysis

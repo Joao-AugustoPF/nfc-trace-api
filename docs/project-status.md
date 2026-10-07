@@ -1,7 +1,9 @@
 # Entregas publicadas e trabalho restante
 
-Atualização de 7 de outubro de 2026. Branch nos dois repositórios:
-`codex/issue-7-experiment-instrumentation`, sobre `codex/issue-6-event-reconciliation`.
+Atualização de 7 de outubro de 2026. API:
+`codex/issue-8-experimental-protocol`, sobre `codex/issue-7-experiment-instrumentation`.
+Mobile permanece em `codex/issue-7-experiment-instrumentation`; não precisa de
+alteração para esta preparação offline de protocolo/análise.
 Sem merge na main; publicação/backlog autorizados pelo mantenedor. A revisão do
 colega, integração das bases e reprodução final permanecem na #9.
 
@@ -24,14 +26,17 @@ de cliente/observador são declaradas; não equivalem a prova física automátic
 
 ## Trabalho restante
 
-A próxima parte independente é **#8: protocolo preliminar e análise reproduzível**.
-Pode avançar com controles sintéticos. Piloto/coleta principal requerem #12 e
-protocolo/amostra fixados após o piloto, sem inventar resultados.
+**Preparação da #8 implementada:** protocolo/modelo de ameaça e 13 cenários,
+calendário preliminar balanceado, planilha externa de observação vazia e análise
+Python reproduzível com tabelas/gráficos, manifesto e contrastes por etiqueta/sessão.
+[Guia e limites](../experiments/README.md). Piloto/coleta principal requerem #12 e
+protocolo/amostra fixados após o piloto. A #8 continua aberta; dados sintéticos
+validam software, sem substituir resultados experimentais.
 
 | Issue | Falta | Dependência para concluir |
 | --- | --- | --- |
 | [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12) | Administração/personalização/secure messaging, proteção reversível, recuperação, perfil definitivo e aceite NTAG | Hardware real e implementação/procedimento físico restante |
-| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Protocolo, piloto, coleta controlada, análise e validade | #12; instrumentação #7 disponível |
+| [#8](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/8) | Piloto real, protocolo/amostra final, coleta/análise física e validade; preparação de software pronta | #12; instrumentação #7 disponível |
 | [#9](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/9) | Integração/reprodução das versões finais, APK e material do TCC | #8 e aceites físicos transitivos |
 
 ```mermaid
@@ -81,5 +86,24 @@ sobre #4; integrar na ordem das bases na #9.
 - [Nova-tag #6](https://github.com/brunoaiolfi/Nova-tag/pull/6), sobre [#5](https://github.com/brunoaiolfi/Nova-tag/pull/5), implementação `e470e92`.
 
 #7 concluída em software. PRs continuam abertos, sem merge; #9 acompanha revisão,
-integração e reprodução final. #8 pode avançar com protocolo e análise de controles;
+integração e reprodução final. #8 tem protocolo/análise preliminares implementados;
 #12 ainda precisa da administração/aceite físico NTAG 424 DNA.
+
+## Verificação da preparação #8
+
+- 27 testes Python: denominadores, falhas/exclusões, ground truth revisado, pendências,
+  clock reiniciado, marcadores ausentes, peso igual por etiqueta, pares por sessão,
+  limite de bootstrap, integridade e gráficos/manifesto. Dependências em venv local.
+- 122 testes API/11 suítes com PostgreSQL real; lint/fronteiras, tipos, build,
+  formatter e geração OpenAPI (sem alteração do contrato).
+- Calendário candidato: 540 tarefas/54 células, seis ordens balanceadas; nenhum
+  UUID físico fabricado e planilha do observador vazia.
+- Análise dos 43 roteiros sintéticos #7: 27 artefatos com checksum, zero leituras
+  físicas e 129 medidas ausentes/censuradas identificadas. Sem erro de medição;
+  intervalos não produzidos para blocos incompletos. Gráficos conferidos localmente.
+- Sem nova instalação/build mobile, EAS, Actions ou merge. Workflow continua manual
+  e desativado; passos Python só rodarão se alguém habilitar e solicitar execução.
+
+Partes independentes seguintes: reprodução/material técnico #9 e administração NFC
+#12. Piloto real/protocolo final/amostra/coleta da #8 continuam pendentes; o piloto
+preliminar não fornece inferência ou resultado comparativo do TCC.

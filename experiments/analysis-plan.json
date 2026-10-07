@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "version": "nfc-trace.analysis.draft.v1",
+  "status": "PRELIMINAR",
+  "bootstrap": {
+    "enabledByDefault": false,
+    "seed": 424,
+    "replicates": 2000,
+    "minimumTags": 12,
+    "interval": [0.025, 0.975],
+    "interpretation": "EXPLORATORIO_CONDICIONAL_AOS_APARELHOS"
+  },
+  "contrasts": [
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "UID",
+      "right": "NDEF_ESTATICO",
+      "metric": "readSuccess"
+    },
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "UID",
+      "right": "SDM:ESTRITA",
+      "metric": "readSuccess"
+    },
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "NDEF_ESTATICO",
+      "right": "SDM:ESTRITA",
+      "metric": "readSuccess"
+    },
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "UID",
+      "right": "NDEF_ESTATICO",
+      "metric": "INICIO_ATE_CONFIRMACAO_LOCAL"
+    },
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "UID",
+      "right": "SDM:ESTRITA",
+      "metric": "INICIO_ATE_CONFIRMACAO_LOCAL"
+    },
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "left": "NDEF_ESTATICO",
+      "right": "SDM:ESTRITA",
+      "metric": "INICIO_ATE_CONFIRMACAO_LOCAL"
+    },
+    {
+      "scenario": "PRIMEIRA_APRESENTACAO_TARDIA",
+      "left": "SDM:ESTRITA",
+      "right": "SDM:REGISTRO_TARDIO",
+      "metric": "falseRejection"
+    }
+  ]
+}

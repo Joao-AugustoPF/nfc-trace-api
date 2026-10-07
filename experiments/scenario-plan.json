@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "version": "nfc-trace.scenarios.draft.v1",
+  "status": "PRELIMINAR",
+  "cases": [
+    {
+      "scenario": "LEGITIMO_ONLINE",
+      "battery": "A",
+      "goal": "leitura e operação corretas",
+      "expect": "UID/NDEF identificam; SDM autentica; operação compatível autoriza nos três"
+    },
+    {
+      "scenario": "LEGITIMO_OFFLINE",
+      "battery": "C",
+      "goal": "captura local e entrega posterior",
+      "expect": "confirmação SQLite; envio suspenso; após liberação, observação preservada e decisão rastreável; pendências não viram sucesso"
+    },
+    {
+      "scenario": "NDEF_COPIADO",
+      "battery": "B",
+      "goal": "autorizar evidência em etiqueta física diferente",
+      "expect": "UID diferente rejeita no tratamento UID; NDEF estático aceita referência com aviso de UID; SDM reutilizado rejeita, mas primeira apresentação válida copiada não prova proximidade"
+    },
+    {
+      "scenario": "UID_DIVERGENTE",
+      "battery": "B",
+      "goal": "alegar identidade incorreta ou original por cliente hostil",
+      "expect": "UID incorreto rejeita UID; alegação do UID correto pode aceitar; NDEF não usa UID como segunda prova; SDM usa UID autenticado e registra divergência declarada"
+    },
+    {
+      "scenario": "BYTES_ALTERADOS",
+      "battery": "B",
+      "goal": "alterar um byte mantendo envelope válido",
+      "expect": "SDM rejeita evidência criptográfica divergente; UID/NDEF não autenticam bytes adicionais; erros HTTP de estrutura ficam separados"
+    },
+    {
+      "scenario": "CONTEXTO_ALTERADO",
+      "battery": "B",
+      "goal": "alterar operação/horário mantendo evidência",
+      "expect": "MAC não autentica campos externos; autorização e sequência logística ainda se aplicam nos três; não declarar detecção criptográfica de contexto"
+    },
+    {
+      "scenario": "SDM_REUTILIZADO",
+      "battery": "B",
+      "goal": "obter efeito adicional com UUID novo",
+      "expect": "SDM autenticado e previamente usado rejeita; UID/NDEF repetem identificação; operação de MOVIMENTACAO compatível pode autorizar nos baselines"
+    },
+    {
+      "scenario": "PRIMEIRA_APRESENTACAO_TARDIA",
+      "battery": "C",
+      "goal": "entregar contador válido inédito após um maior",
+      "expect": "ambas as políticas SDM classificam TARDIA sem efeito; motivo ESTRITA=SDM_CONTADOR_NAO_CRESCENTE, REGISTRO_TARDIO=SDM_REGISTRO_TARDIO; nenhuma política comprova idade da captura"
+    },
+    {
+      "scenario": "DUPLICACAO",
+      "battery": "C",
+      "goal": "repetir UUID/conteúdo idênticos",
+      "expect": "resultado de recebimento persistido; mesmo efeito único; UUID com conteúdo diferente produz 409, não uma nova observação"
+    },
+    {
+      "scenario": "CONCORRENCIA",
+      "battery": "C",
+      "goal": "entregas simultâneas disputam efeito/contador",
+      "expect": "um efeito por UUID; SDM com UUIDs distintos reserva evidência uma vez; registrar estado inicial e decisões, não supor ordem de rede"
+    },
+    {
+      "scenario": "RESPOSTA_PERDIDA",
+      "battery": "C",
+      "goal": "descartar ACK depois de commit",
+      "expect": "fila retenta envelope imutável; servidor não duplica efeito; decisão original e revisões distinguíveis"
+    },
+    {
+      "scenario": "REORDENACAO",
+      "battery": "C",
+      "goal": "entregar transições em ordem inversa",
+      "expect": "dependências válidas ficam pendentes e reconciliam ou expiram; início/fim/plazo explícitos; classificação SDM pode impedir efeito temporal"
+    },
+    {
+      "scenario": "TRANSFERENCIA_ETIQUETA",
+      "battery": "B",
+      "goal": "mover etiqueta genuína intacta para outra caixa",
+      "expect": "os três podem aceitar; observador externo comprova caixa incorreta; não afirmar autenticação do conteúdo físico"
+    }
+  ]
+}
