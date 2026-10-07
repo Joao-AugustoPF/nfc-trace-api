@@ -1,5 +1,6 @@
 import { AuthenticatedActor } from '../../../shared-kernel/actor';
-export const STRATEGIES = ['UID', 'NDEF_ESTATICO'] as const;
+import { SdmDecision } from './sdm';
+export const STRATEGIES = ['UID', 'NDEF_ESTATICO', 'SDM'] as const;
 export type Strategy = (typeof STRATEGIES)[number];
 export const EVENT_TYPES = [
   'PROVISIONAMENTO',
@@ -36,6 +37,7 @@ export interface ObservationInput {
 }
 
 export interface Decision {
+  sdm?: SdmDecision;
   accepted: boolean;
   reason: string;
   classification: Classification;

@@ -31,6 +31,8 @@ services:
       APP_PROCESS_ROLE: all
       HOST: 0.0.0.0
       PORT: 3000
+      SDM_ACTIVE_MASTER_VERSION: ${SDM_ACTIVE_MASTER_VERSION:-}
+      SDM_MASTER_KEYS_JSON: ${SDM_MASTER_KEYS_JSON:-}
     ports:
       - '127.0.0.1:3000:3000'
     depends_on:

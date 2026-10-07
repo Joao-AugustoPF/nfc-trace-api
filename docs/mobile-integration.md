@@ -2,7 +2,7 @@
 
 O contrato executável está em `openapi.json` e em `/docs`. As rotas de negócio exigem Bearer
 obtido em `POST /autenticacao/login`; ver [autenticação](authentication.md). A branch
-Expo `codex/issue-4-durable-offline` do Nova-tag já integra login/sessão,
+Expo `codex/issue-5-sdm-validation` do Nova-tag já integra login/sessão,
 cadastro de pedidos, UID/NDEF estático, provisionamento em duas etapas, encerramento,
 reutilização, eventos, histórico e fila SQLite com HTTP real. A main do mobile
 ainda representa a versão anterior; consultar a branch ao validar a integração.
@@ -10,6 +10,9 @@ As issues #1/#2/#3 registram o software entregue e aprovado; personalização/pr
 e aceite físico completo foram concentrados na
 [#12](https://github.com/Joao-AugustoPF/nfc-trace-api/issues/12). A integração dos
 PRs na main permanece separada. Veja [situação atual](project-status.md).
+O [contrato SDM e gestão de chaves](sdm-validation.md) descreve o provisionamento
+administrativo, prova de ativação, perfil, políticas e decisões. O app captura
+etiquetas SDM configuradas pela bancada; não executa personalização ou armazena segredos.
 O [contrato de lote e as decisões offline](offline-synchronization.md) descrevem
 `POST /eventos/lote`, limites, resultado por item, cache e reautenticação.
 
@@ -174,7 +177,8 @@ Uma nova leitura/ação terá outro UUID; repetição de transporte mantém o UU
 | Pedido ou etiqueta já vinculados | 409 `PEDIDO_COM_ETIQUETA` / `ETIQUETA_VINCULADA` |
 | Provisionamento após início da operação | 409 `PEDIDO_JA_INICIADO` |
 | Tentativa de ativar vínculo encerrado | 409 `VINCULO_ENCERRADO` |
-| Solicitação de SDM | 422 `ESTRATEGIA_INDISPONIVEL` |
+| Solicitação de estratégia DINAMICA genérica | 422 `ESTRATEGIA_INDISPONIVEL` |
+| Cofre SDM não configurado ou indisponível | 503 `SDM_CHAVES_INDISPONIVEIS`; repetir mesmo payload |
 | Entrada inválida / JSON malformado | 400 `ENTRADA_INVALIDA` ou código de domínio específico |
 | Payload acima do limite | 413 `PAYLOAD_EXCEDIDO` |
 
@@ -217,11 +221,11 @@ O app não recodifica esses registros como evidência original. Falha
 ou truncamento na leitura Type 4 não recupera silenciosamente uma URI do cache/SDK.
 O diagnóstico continua separado e seu relatório não é reutilizado numa captura.
 
-A API v1 conserva esses bytes como **declaração do cliente**. Eles participam da
-idempotência: mudar os bytes sob o mesmo UUID retorna `IDEMPOTENCIA_CONFLITO`,
-mesmo que a URI declarada seja igual. Nesta v1, a decisão ainda usa UID/URI do
-provisionamento; não interpreta Base64 como prova SDM nem exige correspondência
-binária com a URI. A validação autoritativa de SDM depende da #5.
+A API conserva esses bytes exatamente e eles participam da idempotência: mudar
+bytes sob o mesmo UUID retorna `IDEMPOTENCIA_CONFLITO`, mesmo com a mesma URI.
+UID/NDEF mantêm o tratamento anterior. SDM exige a mensagem binária do perfil
+candidato e sua URI correspondente; o servidor valida PICC/MAC, fixa a época e
+reserva contador antes da regra logística. Veja [garantias e limites](sdm-validation.md).
 
 O SDK iOS consultado também chama `readNDEF` ao obter os dados da tag; esse resultado
 é descartado na leitura operacional Type 4 em favor da mensagem APDU capturada.
@@ -231,4 +235,5 @@ declaração de versão NTAG 424 compatível. O gerador offline de perfil SDM ca
 calcula NDEF/offsets e compara layout/permissões, sem criptografia ou ativação.
 Perfil físico definitivo, proteção e aceite da #12 continuam pendentes. Procedimento
 e referências em `Nova-tag-expo/docs/08-evidencia-operacional.md` e
-`Nova-tag-expo/docs/09-perfil-sdm-bancada.md`. A API continua rejeitando SDM.
+`Nova-tag-expo/docs/09-perfil-sdm-bancada.md`. O verificador está implementado em
+software; comparação de layout ou GET_VERSION não substituem sua autenticação.

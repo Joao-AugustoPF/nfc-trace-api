@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 import { AuthenticatedActor } from '../../../shared-kernel/actor';
+import { SdmConfiguration } from '../domain/sdm';
 import {
   Decision,
   ObservationInput,
@@ -30,6 +31,7 @@ export class TagRecord {
 
 @Entity('provisionings')
 export class ProvisioningRecord {
+  @Column('jsonb', { nullable: true }) sdm!: SdmConfiguration | null;
   @PrimaryColumn('uuid') id!: string;
   @Column('uuid', { name: 'tag_id' }) tagId!: string;
   @Column('uuid', { name: 'order_id' }) orderId!: string;

@@ -2864,9 +2864,69 @@
         "type": "object",
         "properties": {}
       },
+      "SdmConfigurationResponse": {
+        "type": "object",
+        "properties": {
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "nfc-trace.sdm.encrypted-picc.v1"
+            ]
+          },
+          "perfilCandidato": {
+            "type": "boolean",
+            "example": true
+          },
+          "politica": {
+            "type": "string",
+            "enum": [
+              "ESTRITA",
+              "REGISTRO_TARDIO"
+            ]
+          },
+          "referenciaChaves": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versaoChaves": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "metaReadSlot": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "fileReadSlot": {
+            "type": "number",
+            "enum": [
+              2
+            ]
+          },
+          "uriTemplate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "perfil",
+          "perfilCandidato",
+          "politica",
+          "referenciaChaves",
+          "versaoChaves",
+          "metaReadSlot",
+          "fileReadSlot",
+          "uriTemplate"
+        ]
+      },
       "ProvisioningResponse": {
         "type": "object",
         "properties": {
+          "sdm": {
+            "$ref": "#/components/schemas/SdmConfigurationResponse"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -2889,7 +2949,8 @@
             "type": "string",
             "enum": [
               "UID",
-              "NDEF_ESTATICO"
+              "NDEF_ESTATICO",
+              "SDM"
             ]
           },
           "epoca": {
@@ -3024,9 +3085,63 @@
           "perfil"
         ]
       },
+      "SdmDecisionResponse": {
+        "type": "object",
+        "properties": {
+          "perfil": {
+            "type": "string"
+          },
+          "politica": {
+            "type": "string",
+            "enum": [
+              "ESTRITA",
+              "REGISTRO_TARDIO"
+            ]
+          },
+          "epoca": {
+            "type": "number"
+          },
+          "autenticada": {
+            "type": "boolean"
+          },
+          "previamenteUtilizada": {
+            "type": "boolean"
+          },
+          "contador": {
+            "type": "number",
+            "nullable": true
+          },
+          "maiorContadorAnterior": {
+            "type": "number",
+            "nullable": true
+          },
+          "temporalidade": {
+            "type": "string",
+            "enum": [
+              "NAO_AVALIADA",
+              "NOVA",
+              "TARDIA",
+              "REUTILIZADA"
+            ]
+          }
+        },
+        "required": [
+          "perfil",
+          "politica",
+          "epoca",
+          "autenticada",
+          "previamenteUtilizada",
+          "contador",
+          "maiorContadorAnterior",
+          "temporalidade"
+        ]
+      },
       "DecisionResponse": {
         "type": "object",
         "properties": {
+          "sdm": {
+            "$ref": "#/components/schemas/SdmDecisionResponse"
+          },
           "autorizada": {
             "type": "boolean"
           },
@@ -3149,9 +3264,18 @@
             "type": "string",
             "enum": [
               "UID",
-              "NDEF_ESTATICO"
+              "NDEF_ESTATICO",
+              "SDM"
             ],
-            "description": "DINAMICA resulta em 422 nesta versão."
+            "description": "SDM usa o perfil candidato encrypted-picc.v1; DINAMICA genérica resulta em 422."
+          },
+          "politicaSdm": {
+            "type": "string",
+            "enum": [
+              "ESTRITA",
+              "REGISTRO_TARDIO"
+            ],
+            "description": "Obrigatória para SDM; imutável dentro da época."
           }
         },
         "required": [
@@ -3159,23 +3283,6 @@
           "uid",
           "modelo",
           "estrategia"
-        ]
-      },
-      "ActivationDto": {
-        "type": "object",
-        "properties": {
-          "bloqueioConfirmado": {
-            "type": "boolean",
-            "example": true,
-            "description": "Declaração do cliente; não constitui prova criptográfica."
-          },
-          "referenciaNdef": {
-            "type": "string",
-            "example": "urn:nfc-trace:provisioning:00000000-0000-4000-8000-000000000001"
-          }
-        },
-        "required": [
-          "bloqueioConfirmado"
         ]
       },
       "ReadingDto": {
@@ -3204,11 +3311,35 @@
           },
           "bytesBase64": {
             "type": "string",
-            "description": "Mensagem NDEF original opcional, em Base64, sem NLEN/status APDU. Preservada exatamente; não comprova autenticidade nem é reavaliada como NDEF/SDM na v1. Omitir se o leitor não disponibilizar bytes originais."
+            "description": "Mensagem NDEF original em Base64, sem NLEN/status APDU. Obrigatória no SDM: exatamente um registro URI do perfil candidato (127 bytes); MAC calculado sobre os bytes originais. Opcional para UID/NDEF estático."
           }
         },
         "required": [
           "uid"
+        ]
+      },
+      "ActivationDto": {
+        "type": "object",
+        "properties": {
+          "bloqueioConfirmado": {
+            "type": "boolean",
+            "example": true,
+            "description": "Configuração física declarada; SDM também exige prova criptográfica."
+          },
+          "referenciaNdef": {
+            "type": "string"
+          },
+          "leituraSdm": {
+            "description": "Leitura SDM após personalização. Reserva o contador usado na ativação.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadingDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "bloqueioConfirmado"
         ]
       },
       "ObservationResponse": {

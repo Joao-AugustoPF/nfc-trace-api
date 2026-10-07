@@ -2,6 +2,7 @@ import { ndefReference } from '../domain/values';
 import { OrderSnapshot } from '../domain/order';
 import { ObservationRecord } from '../domain/types';
 import { ProvisioningDetails } from './ports';
+import { sdmUri } from '../domain/sdm';
 
 export const orderView = (o: OrderSnapshot) => ({
   id: o.id,
@@ -23,6 +24,20 @@ export const provisioningView = ({ provisioning: p, tag }: ProvisioningDetails) 
   epoca: p.epoch,
   status: p.status,
   referenciaNdef: p.strategy === 'NDEF_ESTATICO' ? ndefReference(p.id) : null,
+  ...(p.sdm
+    ? {
+        sdm: {
+          perfil: p.sdm.profile,
+          perfilCandidato: true,
+          politica: p.sdm.policy,
+          referenciaChaves: p.sdm.keyReference,
+          versaoChaves: p.sdm.keyVersion,
+          metaReadSlot: 1,
+          fileReadSlot: 2,
+          uriTemplate: sdmUri(p.id),
+        },
+      }
+    : {}),
   criadoEm: p.createdAt,
   ativadoEm: p.activatedAt,
   encerradoEm: p.closedAt,
@@ -49,5 +64,6 @@ export const observationView = (o: ObservationRecord) => ({
     estadoAnterior: o.decision.previousState,
     estadoResultante: o.decision.resultingState,
     avisos: o.decision.warnings,
+    ...(o.decision.sdm ? { sdm: o.decision.sdm } : {}),
   },
 });

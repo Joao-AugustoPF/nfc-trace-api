@@ -8,6 +8,8 @@ import { normalizeUid } from '../domain/values';
 import { Clock, Fingerprint, IdGenerator, UnitOfWork } from './ports';
 import { envelopes } from './event-factory';
 import { observationView } from './views';
+import { evaluateSdmCounter } from '../domain/sdm';
+import { SdmCryptography } from './sdm-ports';
 
 export function normalizeObservation(input: ObservationInput): ObservationInput {
   return {
@@ -42,6 +44,7 @@ export class RecordObservation {
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
     private readonly fingerprints: Fingerprint,
+    private readonly sdmCrypto?: SdmCryptography,
   ) {}
 
   async execute(
@@ -102,7 +105,57 @@ export class RecordObservation {
           decision.warnings = evidence.warnings;
           decision.evidence = evidence.valid ? 'IDENTIFICADA' : 'INVALIDA';
           decision.reason = evidence.reason;
-          if (evidence.valid) {
+          let eligible = evidence.valid;
+          if (p.strategy === 'SDM') {
+            if (!p.sdm || !this.sdmCrypto)
+              throw new DomainError(
+                'SDM_CHAVES_INDISPONIVEIS',
+                'Cofre SDM indisponível.',
+                'unavailable',
+              );
+            const result = this.sdmCrypto.verify(
+              p.id,
+              p.sdm,
+              tag.uid,
+              input.leituraBruta,
+              await tx.sdm.keys(p.id),
+            );
+            eligible = false;
+            decision.evidence = result.valid ? 'IDENTIFICADA' : 'INVALIDA';
+            decision.reason = result.valid ? 'SDM_AUTENTICADA' : 'SDM_INVALIDA';
+            decision.classification =
+              evidence.warnings.length || !result.valid ? 'SUSPEITO' : 'REGULAR';
+            decision.sdm = {
+              perfil: p.sdm.profile,
+              politica: p.sdm.policy,
+              epoca: p.epoch,
+              autenticada: result.valid,
+              previamenteUtilizada: false,
+              contador: result.counter,
+              maiorContadorAnterior: null,
+              temporalidade: 'NAO_AVALIADA',
+            };
+            if (result.valid && result.counter !== null) {
+              // Authentication reserves evidence even when logistics rejects it. The receipt
+              // remains the owner, so reconciliation must later refer to this same UUID.
+              const reservation = await tx.sdm.reserve(p.id, result.counter, input.id);
+              const outcome = evaluateSdmCounter(
+                p.sdm.policy,
+                result.counter,
+                reservation.maximum,
+                reservation.used,
+              );
+              decision.sdm.previamenteUtilizada = reservation.used;
+              decision.sdm.maiorContadorAnterior =
+                reservation.maximum < 0 ? null : reservation.maximum;
+              decision.sdm.temporalidade = outcome.timing;
+              decision.reason = outcome.reason;
+              eligible = outcome.eligible;
+              if (reservation.used || (outcome.timing === 'TARDIA' && p.sdm.policy === 'ESTRITA'))
+                decision.classification = 'SUSPEITO';
+            }
+          }
+          if (eligible) {
             const outcome = order.apply(input.tipo);
             decision.accepted = outcome.accepted;
             decision.reason = outcome.reason;
@@ -144,6 +197,7 @@ export class RecordObservation {
             autorizada: decision.accepted,
             motivo: decision.reason,
             classificacao: decision.classification,
+            ...(decision.sdm ? { sdm: decision.sdm } : {}),
           },
         },
       ];

@@ -33,6 +33,7 @@ import {
   UsersController,
 } from '../bounded-contexts/identity/presentation/http/controller';
 import { AuthenticationGuard } from '../platform/access/http-security';
+import { NodeSdmCryptography } from '../bounded-contexts/traceability/infrastructure/sdm-crypto';
 
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(
@@ -50,6 +51,7 @@ export class AppModule {
     const uow = new TypeOrmUnitOfWork(source);
     const clock = new SystemClock();
     const ids = new NodeIds();
+    const sdm = new NodeSdmCryptography(config.sdmMasterVersion, config.sdmMasterKeysJson);
     const identity = new PostgresIdentityStore(source);
     const passwords = new ScryptPasswords();
     const tokens = new OpaqueTokens();
@@ -88,15 +90,15 @@ export class AppModule {
         { provide: DataSource, useValue: source },
         { provide: DatabaseLifecycle, useFactory: () => new DatabaseLifecycle(source, ownsSource) },
         { provide: CreateOrder, useFactory: () => new CreateOrder(uow, clock, ids) },
-        { provide: ProvisionTag, useFactory: () => new ProvisionTag(uow, clock, ids) },
+        { provide: ProvisionTag, useFactory: () => new ProvisionTag(uow, clock, ids, sdm) },
         {
           provide: ActivateProvisioning,
-          useFactory: () => new ActivateProvisioning(uow, clock, ids),
+          useFactory: () => new ActivateProvisioning(uow, clock, ids, sdm),
         },
         { provide: CloseProvisioning, useFactory: () => new CloseProvisioning(uow, clock, ids) },
         {
           provide: RecordObservation,
-          useFactory: () => new RecordObservation(uow, clock, ids, new Sha256Fingerprint()),
+          useFactory: () => new RecordObservation(uow, clock, ids, new Sha256Fingerprint(), sdm),
         },
         {
           provide: TraceabilityQueries,

@@ -78,7 +78,7 @@ Por isso `observations.provisioning_id` não tem FK. Quando o vínculo existe, a
 sempre vem do cadastro. Não existe fallback para um tratamento mais fraco.
 
 UID e NDEF estático são reutilizáveis em diferentes capturas. A unicidade de UUID não
-representa anti-replay da evidência física. As garantias SDM serão implementadas separadamente.
+representa anti-replay da evidência física. SDM reserva contador por época, conforme ADR 007.
 
 ## ADR 004 — Regras logísticas e provisionamento
 
@@ -101,7 +101,8 @@ não redefine o pedido nem remove histórico. Reutilizar uma etiqueta produz nov
 capturas antigas continuam vinculadas à época original.
 
 A API não lê hardware. `bloqueioConfirmado` é uma declaração; para NDEF também é necessário
-confirmar a referência emitida. Nenhuma chave de etiqueta é recebida ou devolvida na v1.
+confirmar a referência emitida. SDM exige também prova criptográfica na primeira
+ativação. Nenhuma chave de etiqueta é recebida ou devolvida na interface HTTP.
 
 ## ADR 005 — Eventos recuperáveis
 
@@ -119,6 +120,27 @@ operações externas irreversíveis assumindo que o rollback do banco as desfaz.
 
 Autenticação foi entregue no contexto `identity`, com sessões revogáveis, permissões na
 fronteira HTTP e autoria verificada registrada separadamente das declarações (ver
-[ADR 006](authentication.md)). A v2 adicionará fila mobile, lote com resultado por item e dependências/reconciliação.
-A v3 adicionará o perfil SDM definido com o hardware, chaves e controle de evidência por
-etiqueta/época/contador. Essas etapas exigem novas decisões e testes; não estão simuladas na v1.
+[ADR 006](authentication.md)). A fila SQLite e o lote foram entregues em #4.
+SDM foi entregue em #5 com perfil candidato, cofre e contador por época. Reconciliação
+durável/versionada é #6; perfil e aceite físico definitivos permanecem em #12.
+
+## ADR 007 — SDM e reserva de evidência
+
+Criptografia é um adaptador da porta `SdmCryptography`; agregados e aplicação
+não importam Node/Nest/ORM. Provisioning mantém somente referência/versão, perfil
+e política imutáveis. Material aleatório por época fica cifrado em um cofre local
+AES-GCM, com mestra externa ao PostgreSQL. Rotação da mestra reencifra wrappers;
+troca de chave da tag exige nova época e personalização física.
+
+Pedido é bloqueado e vínculo relido antes da avaliação. Autenticação válida reserva
+contador em tabela append-only com unicidade `(provisionamento,contador)`, e atualiza
+máximo monotônico mesmo quando a sequência logística rejeita. Observação, reserva,
+máximo, decisão, estado, movimento e outbox compartilham a UnitOfWork. Política tardia
+preserva evidência inédita fora de ordem sem autorizar transição automaticamente.
+Reenvio do mesmo UUID retorna recibo original antes de consumir qualquer evidência.
+
+A CLI administrativa exporta chaves apenas para vínculo pendente, em arquivo novo
+privado com ACL/mode restrito e caminho ignorado. Auditoria contém referências,
+sem segredos. Distribuição/personalização, proteção de escrita e secure messaging
+são #12; não fazem parte da captura operacional. Detalhes, vetores, limitações
+de frescor e recuperação em [SDM](sdm-validation.md).

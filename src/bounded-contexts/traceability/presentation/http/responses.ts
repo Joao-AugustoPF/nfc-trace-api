@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ObservationDto } from './dtos';
 export { ApiSuccess } from '../../../../platform/http/api-response';
 
@@ -11,13 +11,34 @@ export class OrderResponse {
   @ApiProperty() versao!: number;
   @ApiProperty({ format: 'date-time' }) criadoEm!: string;
 }
+export class SdmConfigurationResponse {
+  @ApiProperty({ enum: ['nfc-trace.sdm.encrypted-picc.v1'] }) perfil!: string;
+  @ApiProperty({ example: true }) perfilCandidato!: boolean;
+  @ApiProperty({ enum: ['ESTRITA', 'REGISTRO_TARDIO'] }) politica!: string;
+  @ApiProperty({ format: 'uuid' }) referenciaChaves!: string;
+  @ApiProperty({ enum: [1] }) versaoChaves!: number;
+  @ApiProperty({ enum: [1] }) metaReadSlot!: number;
+  @ApiProperty({ enum: [2] }) fileReadSlot!: number;
+  @ApiProperty() uriTemplate!: string;
+}
+export class SdmDecisionResponse {
+  @ApiProperty() perfil!: string;
+  @ApiProperty({ enum: ['ESTRITA', 'REGISTRO_TARDIO'] }) politica!: string;
+  @ApiProperty() epoca!: number;
+  @ApiProperty() autenticada!: boolean;
+  @ApiProperty() previamenteUtilizada!: boolean;
+  @ApiProperty({ type: Number, nullable: true }) contador!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) maiorContadorAnterior!: number | null;
+  @ApiProperty({ enum: ['NAO_AVALIADA', 'NOVA', 'TARDIA', 'REUTILIZADA'] }) temporalidade!: string;
+}
 export class ProvisioningResponse {
+  @ApiPropertyOptional({ type: SdmConfigurationResponse }) sdm?: SdmConfigurationResponse;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) etiquetaId!: string;
   @ApiProperty() uid!: string;
   @ApiProperty() modelo!: string;
   @ApiProperty({ format: 'uuid' }) pedidoId!: string;
-  @ApiProperty({ enum: ['UID', 'NDEF_ESTATICO'] }) estrategia!: string;
+  @ApiProperty({ enum: ['UID', 'NDEF_ESTATICO', 'SDM'] }) estrategia!: string;
   @ApiProperty() epoca!: number;
   @ApiProperty({ enum: ['REGISTRADA', 'ATIVA', 'DESPROVISIONADA'] }) status!: string;
   @ApiProperty({ type: String, nullable: true }) referenciaNdef!: string | null;
@@ -34,6 +55,7 @@ export class OrderDetailsResponse extends OrderResponse {
   provisionamentoVigente!: ProvisioningResponse | null;
 }
 export class DecisionResponse {
+  @ApiPropertyOptional({ type: SdmDecisionResponse }) sdm?: SdmDecisionResponse;
   @ApiProperty() autorizada!: boolean;
   @ApiProperty() motivo!: string;
   @ApiProperty({ enum: ['REGULAR', 'SUSPEITO'] }) classificacao!: string;

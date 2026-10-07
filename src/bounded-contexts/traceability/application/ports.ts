@@ -2,6 +2,7 @@ import { EventEnvelope } from '../../../shared-kernel/events';
 import { Order, OrderSnapshot } from '../domain/order';
 import { Provisioning, ProvisioningSnapshot } from '../domain/provisioning';
 import { Movement, ObservationRecord, TagSnapshot } from '../domain/types';
+import { SdmRepository } from './sdm-ports';
 
 export interface Clock {
   now(): string;
@@ -43,6 +44,7 @@ export interface OutboxWriter {
 }
 
 export interface Transaction {
+  sdm: SdmRepository;
   orders: OrderRepository;
   tags: TagRepository;
   provisionings: ProvisioningRepository;

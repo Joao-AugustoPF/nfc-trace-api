@@ -33,7 +33,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
       if (status === 401) response.setHeader('WWW-Authenticate', 'Bearer');
       if (status === 429) response.setHeader('Retry-After', '900');
     } else if (error instanceof DomainError) {
-      status = { validation: 400, 'not-found': 404, conflict: 409, unsupported: 422 }[error.kind];
+      status = {
+        validation: 400,
+        'not-found': 404,
+        conflict: 409,
+        unsupported: 422,
+        unavailable: 503,
+      }[error.kind];
       code = error.code;
       message = error.message;
     } else if (

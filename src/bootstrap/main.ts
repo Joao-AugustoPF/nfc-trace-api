@@ -6,9 +6,11 @@ import { createDataSource } from '../platform/database/data-source';
 import { createHttpApplication } from './application';
 import { AppModule } from './app.module';
 import { readConfig } from './config';
+import { loadSdmEnv } from '../platform/access/sdm-env';
 
 async function main(): Promise<void> {
   loadEnv({ quiet: true });
+  loadSdmEnv();
   const config = readConfig();
   const source = await createDataSource(config.databaseUrl).initialize();
   try {

@@ -57,28 +57,19 @@ export class ProvisionTagDto {
   @MaxLength(64)
   modelo!: string;
   @ApiProperty({
-    enum: ['UID', 'NDEF_ESTATICO'],
-    description: 'DINAMICA resulta em 422 nesta versão.',
+    enum: ['UID', 'NDEF_ESTATICO', 'SDM'],
+    description: 'SDM usa o perfil candidato encrypted-picc.v1; DINAMICA genérica resulta em 422.',
   })
   @IsString()
-  @IsIn(['UID', 'NDEF_ESTATICO', 'DINAMICA'])
+  @IsIn(['UID', 'NDEF_ESTATICO', 'SDM', 'DINAMICA'])
   estrategia!: string;
-}
-
-export class ActivationDto {
-  @ApiProperty({
-    example: true,
-    description: 'Declaração do cliente; não constitui prova criptográfica.',
-  })
-  @IsBoolean()
-  bloqueioConfirmado!: boolean;
   @ApiPropertyOptional({
-    example: 'urn:nfc-trace:provisioning:00000000-0000-4000-8000-000000000001',
+    enum: ['ESTRITA', 'REGISTRO_TARDIO'],
+    description: 'Obrigatória para SDM; imutável dentro da época.',
   })
   @Optional()
-  @IsString()
-  @MaxLength(512)
-  referenciaNdef?: string;
+  @IsIn(['ESTRITA', 'REGISTRO_TARDIO'])
+  politicaSdm?: string;
 }
 
 export class ReadingDto {
@@ -104,13 +95,36 @@ export class ReadingDto {
   tecnologias?: string[];
   @ApiPropertyOptional({
     description:
-      'Mensagem NDEF original opcional, em Base64, sem NLEN/status APDU. Preservada exatamente; não comprova autenticidade nem é reavaliada como NDEF/SDM na v1. Omitir se o leitor não disponibilizar bytes originais.',
+      'Mensagem NDEF original em Base64, sem NLEN/status APDU. Obrigatória no SDM: exatamente um registro URI do perfil candidato (127 bytes); MAC calculado sobre os bytes originais. Opcional para UID/NDEF estático.',
   })
   @Optional()
   @IsString()
   @MaxLength(16384)
   @IsBase64()
   bytesBase64?: string;
+}
+
+export class ActivationDto {
+  @ApiProperty({
+    example: true,
+    description: 'Configuração física declarada; SDM também exige prova criptográfica.',
+  })
+  @IsBoolean()
+  bloqueioConfirmado!: boolean;
+  @ApiPropertyOptional()
+  @Optional()
+  @IsString()
+  @MaxLength(512)
+  referenciaNdef?: string;
+  @ApiPropertyOptional({
+    type: ReadingDto,
+    description: 'Leitura SDM após personalização. Reserva o contador usado na ativação.',
+  })
+  @Optional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ReadingDto)
+  leituraSdm?: ReadingDto;
 }
 
 export class ObservationDto implements ObservationInput {

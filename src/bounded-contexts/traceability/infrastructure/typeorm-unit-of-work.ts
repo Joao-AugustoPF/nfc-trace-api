@@ -10,9 +10,55 @@ import {
   MovementRecord,
 } from './records';
 import { toOrder, toTag, toProvisioning, toObservation } from './mappers';
+import { SealedSdmKeys } from '../application/sdm-ports';
 
 export function createTransaction(manager: EntityManager): Transaction {
   return {
+    sdm: {
+      async insertKeys(id, _configuration, keys) {
+        await manager.query('INSERT INTO sdm_keys (provisioning_id,sealed) VALUES ($1,$2)', [
+          id,
+          JSON.stringify(keys),
+        ]);
+        await manager.query('INSERT INTO sdm_counter_state (provisioning_id) VALUES ($1)', [id]);
+      },
+      async keys(id) {
+        const rows: { sealed: SealedSdmKeys }[] = await manager.query(
+          'SELECT sealed FROM sdm_keys WHERE provisioning_id=$1',
+          [id],
+        );
+        if (!rows[0])
+          throw new DomainError(
+            'SDM_CHAVES_INDISPONIVEIS',
+            'Chaves SDM indisponíveis.',
+            'unavailable',
+          );
+        return rows[0].sealed;
+      },
+      async reserve(id, counter, observationId) {
+        const rows: { maximum: number }[] = await manager.query(
+          'SELECT maximum FROM sdm_counter_state WHERE provisioning_id=$1 FOR UPDATE',
+          [id],
+        );
+        if (!rows[0])
+          throw new DomainError(
+            'SDM_CHAVES_INDISPONIVEIS',
+            'Estado SDM indisponível.',
+            'unavailable',
+          );
+        const maximum = rows[0].maximum;
+        const inserted: unknown[] = await manager.query(
+          'INSERT INTO sdm_evidence (provisioning_id,counter,observation_id) VALUES ($1,$2,$3) ON CONFLICT (provisioning_id,counter) DO NOTHING RETURNING counter',
+          [id, counter, observationId],
+        );
+        if (inserted.length)
+          await manager.query(
+            'UPDATE sdm_counter_state SET maximum=GREATEST(maximum,$2) WHERE provisioning_id=$1',
+            [id, counter],
+          );
+        return { used: !inserted.length, maximum };
+      },
+    },
     orders: {
       async get(id, lock = false) {
         const row = await manager.findOne(OrderRecord, {
