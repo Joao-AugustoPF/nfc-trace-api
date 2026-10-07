@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "nfc-trace.pilot.draft.v1",
+  "status": "PRELIMINAR",
+  "seed": 424,
+  "tags": ["TAG-01", "TAG-02", "TAG-03", "TAG-04", "TAG-05", "TAG-06"],
+  "devices": ["PHONE-01", "PHONE-02", "PHONE-03"],
+  "sessions": ["PILOT-S1"],
+  "repetitions": 10,
+  "timeoutMs": 15000,
+  "eventType": "MOVIMENTACAO",
+  "sdmPolicy": "ESTRITA",
+  "configuration": {
+    "tagSku": "PREENCHER_APOS_ACEITE_12",
+    "antenna": "PREENCHER",
+    "position": "PREENCHER",
+    "surface": "PREENCHER",
+    "phoneCase": "PREENCHER"
+  }
+}

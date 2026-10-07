@@ -16,6 +16,11 @@ tentativas no Nova-tag, medidas monotônicas, exportação JSON/CSV, integridade
 cenários reproduzíveis. Veja [contrato e coleta instrumental](docs/experimentation.md).
 Fixtures e reexecuções são identificadas; piloto/análise física continuam na #8/#12.
 
+Preparação da #8 disponível em [protocolo e análise](experiments/README.md):
+planejamento balanceado do piloto e análise offline Python com tabelas/gráficos,
+fatos brutos, censura e contrastes por etiqueta/sessão. Protocolo preliminar;
+piloto/coleta principal e amostra final ainda dependem de hardware e dados reais.
+
 Antes de usar as rotas de negócio, criar o primeiro administrador pelo procedimento de
 [autenticação e contas do laboratório](docs/authentication.md). Não há senha padrão.
 
