@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: reproduction
+      POSTGRES_PASSWORD: ${REPRO_DB_PASSWORD:?private process value required}
+      POSTGRES_DB: nfc_reproduction_test
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reproduction -d nfc_reproduction_test']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  migrate:
+    build:
+      context: ..
+      args:
+        BUILD_REVISION: ${REPRO_REVISION}
+    environment:
+      DATABASE_URL: postgresql://reproduction:${REPRO_DB_PASSWORD}@postgres:5432/nfc_reproduction_test
+    command: ['node', 'dist/platform/database/cli.js', 'migrate']
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    build:
+      context: ..
+      args:
+        BUILD_REVISION: ${REPRO_REVISION}
+    environment:
+      DATABASE_URL: postgresql://reproduction:${REPRO_DB_PASSWORD}@postgres:5432/nfc_reproduction_test
+      HOST: 0.0.0.0
+      PORT: 3000
+      APP_PROCESS_ROLE: api
+    ports:
+      - '127.0.0.1::3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres_data:

@@ -63,7 +63,8 @@ worker porque a posse é verificada pelo token.
 ## Observabilidade
 
 - `/health/live`: processo HTTP disponível.
-- `/health/ready`: PostgreSQL responde e a tabela de outbox existe.
+- `/health/ready`: PostgreSQL e estruturas de outbox, identidade, decisões e experimentação disponíveis.
+- `/health/version`: identidade/hash do build compilado, separado da execução ts-node sem manifesto.
 - `/metrics` (Bearer de administrador): contagem de eventos PENDING, PROCESSING, FAILED e PROCESSED, além da idade
   do evento pendente mais antigo.
 - Logs JSON: correlação, rota, método, resultado HTTP e duração monotônica.
@@ -103,6 +104,9 @@ git diff --exit-code -- docs/openapi.json
 O último comando pressupõe que o contrato gerado já foi incluído no commit.
 
 ## Validação física futura
+
+Reprodução, identificação de versões, backup/restauração em clone e material de
+entrega estão no [guia atual](reproduction.md). Dump não contém o cofre externo SDM.
 
 Os testes automáticos usam leituras sintéticas. A aceitação com hardware exige conferir
 leitura NDEF, configuração das permissões e bloqueio efetivo em NTAG 424 DNA. Essa validação

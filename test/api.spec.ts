@@ -71,6 +71,9 @@ describe('HTTP API with PostgreSQL', () => {
   it('serves readiness, metrics and the OpenAPI contract', async () => {
     await http().get('/health/live').expect(200, { status: 'ok' });
     await http().get('/health/ready').expect(200, { status: 'ready' });
+    const version = await request(app.getHttpServer()).get('/health/version').expect(200);
+    expect(version.body.status).toBe('DESENVOLVIMENTO_SEM_MANIFESTO');
+    expect(version.body).not.toHaveProperty('databaseUrl');
     const metrics = await http().get('/metrics').expect(200);
     expect(metrics.text).toContain('nfc_outbox_events{status="FAILED"} 0');
     const spec = await http().get('/openapi.json').expect(200);

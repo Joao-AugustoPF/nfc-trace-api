@@ -2,6 +2,7 @@ import { Controller, Get, Header, ServiceUnavailableException } from '@nestjs/co
 import { ApiExcludeController } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { PublicAccess, AllowRoles } from '../access/http-security';
+import { publicBuildInfo } from './build-info';
 
 @ApiExcludeController()
 @Controller()
@@ -11,6 +12,11 @@ export class HealthController {
   @Get('health/live')
   live() {
     return { status: 'ok' };
+  }
+  @PublicAccess()
+  @Get('health/version')
+  version() {
+    return publicBuildInfo();
   }
   @PublicAccess()
   @Get('health/ready')
