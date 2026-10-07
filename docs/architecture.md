@@ -154,3 +154,22 @@ revogação. Consumidor com inbox usa o mesmo bloqueio de pedido e a transação
 entrega, sem dependência de ORM na aplicação. Estratégia/época/autoria permanecem
 as originais; a reserva SDM é conferida sem consumo novo. Prazo, ordenação,
 migração v1 e distinção POST original/GET atual em [reconciliação](reconciliation.md).
+
+## ADR 009 — Instrumentação, ground truth e snapshots
+
+`experimentation` é um contexto de planejamento/evidência instrumental. Suas
+portas consultam tratamento/política e fatos de rastreabilidade por projeções SQL
+explícitas, sem importar entidades de outro contexto. Execuções, roteiros,
+ground truth e estágios são append-only; correções de avaliação têm revisões.
+A composição fornece a autorização transacional por conta/sessão.
+
+Captura operacional congelada e associação experimental ficam separadas, com
+commit conjunto em SQLite. Falhas antes da captura também têm registros duráveis.
+O servidor salva intervalos monotônicos na transação de decisão/outbox, sem usar
+horários UTC de máquinas distintas para calcular durações. Origem reiniciada
+censura o intervalo. A fronteira do SDK NFC é operacional, não RF pura.
+
+Exportação usa `REPEATABLE READ`/`READ ONLY`, whitelist de fatos operacionais e
+checksum canônico. Identidade autenticada, alegações do cliente e conferência
+externa não são tratadas como a mesma evidência. `dataKind`/`mode` separam coleta
+física, reexecuções e fixtures. [Dicionário e reprodução](experimentation.md).

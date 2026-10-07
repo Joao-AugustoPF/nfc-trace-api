@@ -5,6 +5,7 @@ import { InitialSchema1790000000000 } from './migrations/1790000000000-initial-s
 import { Identity1790000001000 } from './migrations/1790000001000-identity';
 import { Sdm1790000002000 } from './migrations/1790000002000-sdm';
 import { Reconciliation1790000003000 } from './migrations/1790000003000-reconciliation';
+import { Experimentation1790000004000 } from './migrations/1790000004000-experimentation';
 
 export function createDataSource(url: string): DataSource {
   return new DataSource({
@@ -16,6 +17,7 @@ export function createDataSource(url: string): DataSource {
       Identity1790000001000,
       Sdm1790000002000,
       Reconciliation1790000003000,
+      Experimentation1790000004000,
     ],
     synchronize: false,
     migrationsRun: false,

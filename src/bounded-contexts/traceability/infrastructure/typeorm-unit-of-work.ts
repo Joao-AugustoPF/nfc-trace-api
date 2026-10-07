@@ -25,6 +25,15 @@ export function createTransaction(
   authorization: AuthorizationFactory = denyAuthorization,
 ): Transaction {
   return {
+    measurements: {
+      async record(observationId, revision, boundary, clock, startMs, endMs) {
+        await manager.query(
+          `INSERT INTO operation_measurements
+          (observation_id,revision,boundary,clock_id,start_ms,end_ms) VALUES ($1,$2,$3,$4,$5,$6)`,
+          [observationId, revision, boundary, clock.originId, startMs, endMs],
+        );
+      },
+    },
     authorization: authorization(manager),
     decisions: decisionRepository(manager),
     sdm: {

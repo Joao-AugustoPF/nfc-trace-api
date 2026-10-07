@@ -19,6 +19,8 @@ export class HealthController {
       await this.source.query('SELECT 1 FROM outbox LIMIT 1');
       await this.source.query('SELECT token_hash FROM identity_sessions LIMIT 1');
       await this.source.query('SELECT revision FROM current_decisions LIMIT 1');
+      await this.source.query('SELECT id FROM experiment_runs LIMIT 1');
+      await this.source.query('SELECT boundary FROM operation_measurements LIMIT 1');
       return { status: 'ready' };
     } catch {
       throw new ServiceUnavailableException('PostgreSQL ou migrations indisponíveis.');

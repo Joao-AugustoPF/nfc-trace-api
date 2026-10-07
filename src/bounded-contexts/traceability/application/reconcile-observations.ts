@@ -3,11 +3,13 @@ import { missingAntecedents } from '../domain/dependencies';
 import { Decision } from '../domain/types';
 import { Clock, IdGenerator, Transaction } from './ports';
 import { envelopes } from './event-factory';
+import { MonotonicClock } from '../../../shared-kernel/measurement';
 
 export class ReconcileObservations {
   constructor(
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
+    private readonly timing?: MonotonicClock,
   ) {}
 
   // The caller owns the inbox transaction. No nested unit of work or ORM types here.
@@ -19,6 +21,7 @@ export class ReconcileObservations {
       progressed = false;
       const pending = await tx.decisions.pending(orderId);
       for (const o of pending) {
+        const measurementStart = this.timing?.nowMs();
         const now = this.clock.now();
         const original = await tx.observations.get(o.input.id);
         if (!original) throw new Error('Missing original observation');
@@ -107,6 +110,15 @@ export class ReconcileObservations {
             o.authenticatedActor ?? null,
           ),
         );
+        if (this.timing && measurementStart !== undefined)
+          await tx.measurements.record(
+            o.input.id,
+            d.revision!,
+            'RECONCILIACAO_ANTES_COMMIT',
+            this.timing,
+            measurementStart,
+            this.timing.nowMs(),
+          );
       }
     } while (progressed);
   }

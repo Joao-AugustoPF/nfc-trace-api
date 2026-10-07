@@ -11,6 +11,7 @@ import { observationView } from './views';
 import { evaluateSdmCounter } from '../domain/sdm';
 import { SdmCryptography } from './sdm-ports';
 import { missingAntecedents } from '../domain/dependencies';
+import { MonotonicClock } from '../../../shared-kernel/measurement';
 
 export function normalizeObservation(input: ObservationInput): ObservationInput {
   return {
@@ -46,6 +47,7 @@ export class RecordObservation {
     private readonly ids: IdGenerator,
     private readonly fingerprints: Fingerprint,
     private readonly sdmCrypto?: SdmCryptography,
+    private readonly timing?: MonotonicClock,
   ) {}
 
   async execute(
@@ -55,6 +57,7 @@ export class RecordObservation {
   ) {
     const input = normalizeObservation(raw);
     const fingerprint = this.fingerprints.of(input);
+    const processingStart = this.timing?.nowMs();
     return this.uow.run(async (tx) => {
       await tx.observations.lock(input.id);
       const existing = await tx.observations.get(input.id);
@@ -84,6 +87,7 @@ export class RecordObservation {
       }
       const now = this.clock.now();
       const previousState = order?.snapshot().state ?? null;
+      let verification: { start: number; end: number } | undefined;
       const decision: Decision = {
         revision: 1,
         evaluatedAt: now,
@@ -107,6 +111,7 @@ export class RecordObservation {
         if (p.status !== 'ATIVA') {
           decision.reason = 'VINCULO_INATIVO';
         } else {
+          const validationStart = this.timing?.nowMs();
           const evidence = evaluateReading(p, tag, input.leituraBruta);
           decision.classification = evidence.classification;
           decision.warnings = evidence.warnings;
@@ -162,6 +167,8 @@ export class RecordObservation {
                 decision.classification = 'SUSPEITO';
             }
           }
+          if (this.timing && validationStart !== undefined)
+            verification = { start: validationStart, end: this.timing.nowMs() };
           if (eligible) {
             const permission = await tx.authorization.check(actor, now);
             // Internal legacy commands can still record synchronous effects, but cannot
@@ -251,6 +258,25 @@ export class RecordObservation {
             actor,
           ),
           decision.expiresAt!,
+        );
+      }
+      if (this.timing && processingStart !== undefined) {
+        if (verification)
+          await tx.measurements.record(
+            input.id,
+            1,
+            'VALIDACAO_EVIDENCIA',
+            this.timing,
+            verification.start,
+            verification.end,
+          );
+        await tx.measurements.record(
+          input.id,
+          1,
+          'PROCESSAMENTO_ANTES_COMMIT',
+          this.timing,
+          processingStart,
+          this.timing.nowMs(),
         );
       }
       return observationView(observation);

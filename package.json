@@ -25,7 +25,10 @@
     "format": "prettier --write src test scripts",
     "format:check": "prettier --check src test scripts",
     "auth:bootstrap": "ts-node src/platform/access/bootstrap-cli.ts",
-    "sdm:keys": "ts-node src/platform/access/sdm-keys-cli.ts"
+    "sdm:keys": "ts-node src/platform/access/sdm-keys-cli.ts",
+    "experiment:scenarios": "node scripts/experiment-scenarios.cjs",
+    "experiment:data": "node scripts/experiment-data.cjs",
+    "experiment:replay": "node scripts/experiment-replay.cjs"
   },
   "dependencies": {
     "@nestjs/common": "12.1.0",

@@ -466,6 +466,10 @@ describe('Durable reconciliation / real PostgreSQL / synthetic SDM, no hardware 
     await runner.startTransaction();
     try {
       const migration = new Reconciliation1790000003000();
+      // Remove the newer dependent schema only inside this rolled-back migration fixture.
+      const { Experimentation1790000004000 } =
+        await import('../src/platform/database/migrations/1790000004000-experimentation');
+      await new Experimentation1790000004000().down(runner);
       await migration.down(runner);
       const legacyId = randomUUID();
       const legacy = {

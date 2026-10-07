@@ -5,6 +5,7 @@ import { Movement, ObservationRecord, TagSnapshot } from '../domain/types';
 import { SdmRepository } from './sdm-ports';
 import { AuthenticatedActor } from '../../../shared-kernel/actor';
 import { Decision } from '../domain/types';
+import { MeasurementWriter } from '../../../shared-kernel/measurement';
 
 export interface CaptureAuthorization {
   check(
@@ -62,6 +63,7 @@ export interface OutboxWriter {
 }
 
 export interface Transaction {
+  measurements: MeasurementWriter;
   authorization: CaptureAuthorization;
   decisions: DecisionRepository;
   sdm: SdmRepository;
